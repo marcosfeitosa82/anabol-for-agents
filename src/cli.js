@@ -11,6 +11,8 @@
  */
 
 const { install, reindex, readById, findSegments, INDEX_DIR, INDEX_FILE } = require('./pipeline');
+const { appendRouteLog } = require('./route-log');
+const { DEFAULT_THRESHOLD } = require('./router');
 const fs = require('fs');
 const path = require('path');
 
@@ -107,6 +109,17 @@ function main() {
         includeCategories: !args['segments-only'],
         log: !!args.log,
       });
+      if (args.log) {
+        appendRouteLog(structure, {
+          at: new Date().toISOString(),
+          query: args.query,
+          threshold: threshold === undefined ? DEFAULT_THRESHOLD : threshold,
+          top: results[0]?.id || null,
+          score: results[0]?.score || 0,
+          matched: results.length > 0,
+          kind: results[0]?.kind || null,
+        });
+      }
       if (args.json) {
         print(results);
       } else if (results.length === 0) {
