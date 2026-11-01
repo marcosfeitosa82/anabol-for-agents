@@ -1,0 +1,1 @@
+{"task":1,"anf":"write failing unit tests first TDD for a pure router module","route":"qa-test-planner","routeStatus":"rejected","reason":"score below threshold and not relevant to a pure router module","score":0.25,"anfBytes":217,"anrBytes":0,"filesRead":["tests/unit/router.test.js","src/router.js","src/lib.js"],"tests":"7/7"}
