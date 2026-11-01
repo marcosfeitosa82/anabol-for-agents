@@ -25,8 +25,10 @@ model — it **nests** new capabilities inside existing category skills as addre
 
 1. **Ingest** — read the source package's skills and your current structure, then categorize.
 2. **Merge** — write each incoming skill *into* the existing skill of the same category.
-3. **Index** — record the exact `startLine`/`endLine` (plus an anchor) for each segment.
-4. **Segment** — at task time, the orchestrator consults the index and reads only that range.
+3. **Index** — record the exact `startLine`/`endLine` (plus an anchor) for each segment, and
+   one whole-category entry per base skill.
+4. **Route** — `find` ranks segments *and* categories outside the model context and prints
+   only the winner; below the confidence threshold it prints `NO_MATCH`.
 
 If the index goes stale (file edited, lines shifted), the reader falls back to locating the
 **anchor** by marker — so it never reads the wrong lines.
@@ -57,6 +59,14 @@ node src/cli.js install \
 # 5. Route a task and read only its segment
 anf "detect SQL injection"
 anr sql-injection-scan
+
+# A category winner reads the whole category (fallback when no segment matches)
+anf "round-trip handoff between backend and frontend"
+anr change-impact
+
+# Off-domain tasks are rejected instead of guessed
+anf "bake a chocolate cake"          # NO_MATCH
+anf "review this pull request" --threshold 0.5
 ```
 
 Without the short commands, use the CLI directly:
@@ -73,8 +83,9 @@ node src/cli.js list    --structure <skills-root>   # id, category, line range, 
 node src/cli.js reindex --structure <skills-root>   # rebuild .anabol/index.json
 ```
 
-`install` accepts `--dry-run` and `--json`; `find` accepts `--limit N` and `--json`;
-`read` accepts `--json` (includes `file`, `category`, `usedFallback`, and `linesRead`).
+`install` accepts `--dry-run` and `--json`; `find` accepts `--limit N`, `--threshold N`,
+`--segments-only`, `--log`, and `--json`; `read` accepts `--json` (includes `file`,
+`category`, `whole`, `usedFallback`, and `linesRead`).
 
 The short commands read `ANABOL_STRUCTURE` (default `~/.config/opencode/skills`) and
 `ANABOL_CLI` (default `<repo>/src/cli.js`), so they work from any directory:
@@ -103,7 +114,15 @@ the winning entry. The index itself looks like this:
 ```
 
 The agent reads `security/SKILL.md` with `offset=31, limit=5` — not the whole file, and not
-the whole index. The `anabol-orchestrator` skill contains the routing rules.
+the whole index. A whole-category winner instead has `startLine: 1` and `endLine` equal to
+the file's line count; `read` reports `whole: true` for it. `find` prints `NO_MATCH` when no
+entry reaches the default threshold (`0.35`), so the orchestrator falls back to its own task
+context instead of reading a low-confidence skill.
+
+Every decision is scored **outside** the model context, and `find` never writes anything
+unless you pass `--log`. With `--log`, one local JSON line is appended to
+`.anabol/route-log.jsonl`; `npm run route:report` summarizes it. The `anabol-orchestrator`
+skill contains the routing rules.
 
 Skills that ship files (`references/`, `scripts/`, `assets/`) keep working: `install` copies
 them to `<category>/anabol-assets/<segment-id>/` and rewrites the relative links in the body.
@@ -134,6 +153,9 @@ blocks the install:
 npm test          # unit + integration tests (node:test, no dependencies)
 npm run verify    # end-to-end check against an installed structure (read-only)
 npm run audit     # comparative benchmark (writes a report to stdout)
+npm run eval:routing   # top-1 accuracy and off-domain rejection on the live structure
+npm run eval:routing -- --self   # every index entry routes to itself
+npm run route:report   # summarize the opt-in .anabol/route-log.jsonl
 ```
 
 Requires Node.js >= 18. No runtime dependencies.

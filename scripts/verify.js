@@ -33,6 +33,7 @@ const crypto = require('crypto');
 const ROOT = path.join(__dirname, '..');
 const { install, reindex, readById, findSegments } = require(path.join(ROOT, 'src/pipeline'));
 const { discoverSkills, discoverSource } = require(path.join(ROOT, 'src/discover'));
+const { appendRouteLog, readRouteLog } = require(path.join(ROOT, 'src/route-log'));
 
 const META = 'anabol-orchestrator';
 
@@ -173,7 +174,7 @@ function verify(opts) {
     // 5. find + read for every segment
     for (const seg of index.segments) {
       const query = seg.description || seg.id.replace(/-/g, ' ');
-      const top = findSegments({ structureRoot: copy, query, limit: 1 })[0];
+      const top = findSegments({ structureRoot: copy, query, limit: 1, threshold: 0, includeCategories: false })[0];
       check(`find("${query.slice(0, 50)}")`, top && top.id === seg.id, `-> ${top ? top.id : 'none'}`);
       if (top) {
         const r = readById({ structureRoot: copy, id: top.id });
@@ -181,6 +182,30 @@ function verify(opts) {
           `${r.linesRead} lines, fallback=${r.usedFallback}`);
       }
     }
+
+    // 5b. whole-category entries
+    check('one whole-category entry per base skill', index.categories.length === baseSkills.length,
+      `${index.categories.length}/${baseSkills.length}`);
+    for (const cat of index.categories) {
+      const file = path.join(copy, cat.file);
+      const lineCount = fs.existsSync(file) ? fs.readFileSync(file, 'utf8').split('\n').length : 0;
+      check(`category range ${cat.id} 1-${cat.endLine}`,
+        fs.existsSync(file) && cat.startLine === 1 && cat.endLine === lineCount,
+        `${cat.endLine} vs ${lineCount}`);
+      const r = readById({ structureRoot: copy, id: cat.id });
+      check(`read whole category ${cat.id}`, r.whole === true && r.linesRead === lineCount,
+        `whole=${r.whole}, ${r.linesRead} lines`);
+      const top = findSegments({ structureRoot: copy, query: cat.description, limit: 1 })[0];
+      check(`route category ${cat.id}`,
+        !!top && (top.id === cat.id || top.category === cat.id),
+        `-> ${top ? `${top.id} (${top.kind})` : 'none'}`);
+    }
+    check('off-domain query has no match',
+      findSegments({ structureRoot: copy, query: 'bake a chocolate cake' }).length === 0);
+
+    // 5c. opt-in route log (on the copy only)
+    appendRouteLog(copy, { query: 'verify route log', top: null, score: 0, matched: false, kind: null });
+    check('route log appends and reads back', readRouteLog(copy).length === 1);
 
     // 6. idempotency
     const before = hashTree(copy);
@@ -200,7 +225,9 @@ function verify(opts) {
     const rebuilt = reindex({ structureRoot: copy, write: false });
     check('reindex reproduces the ranges',
       rebuilt.segments.length === index.segments.length &&
-      rebuilt.segments.every((s, i) => s.startLine === index.segments[i].startLine && s.endLine === index.segments[i].endLine));
+      rebuilt.segments.every((s, i) => s.startLine === index.segments[i].startLine && s.endLine === index.segments[i].endLine) &&
+      rebuilt.categories.length === index.categories.length &&
+      rebuilt.categories.every((c, i) => c.id === index.categories[i].id && c.startLine === 1 && c.endLine === index.categories[i].endLine));
 
     // 9. structure untouched
     check('structure byte-identical end-to-end', hashTree(structure) === liveBefore);
@@ -232,8 +259,10 @@ function verify(opts) {
     if (fs.existsSync(liveIndex)) {
       const stored = JSON.parse(fs.readFileSync(liveIndex, 'utf8'));
       const fresh = reindex({ structureRoot: structure, write: false });
-      check('structure index is up to date', JSON.stringify(stored.segments) === JSON.stringify(fresh.segments),
-        `${stored.segments.length} segments`);
+      check('structure index is up to date',
+        JSON.stringify(stored.segments) === JSON.stringify(fresh.segments) &&
+        JSON.stringify(stored.categories || []) === JSON.stringify(fresh.categories || []),
+        `${stored.segments.length} segments, ${(stored.categories || []).length} categories`);
     } else {
       check('structure has no index yet (no packages installed)', true);
     }
@@ -243,6 +272,7 @@ function verify(opts) {
       liveSkills: liveCount,
       incoming: baseSkills.length,
       segments: index.segments.length,
+      categories: index.categories.length,
       passed: results.filter((r) => r.ok).length,
       failed: results.filter((r) => !r.ok).length,
       results,
@@ -267,7 +297,7 @@ function main() {
     process.stdout.write(JSON.stringify(out, null, 2) + '\n');
   } else {
     console.log(`Anabol verify — ${out.structure}`);
-    console.log(`live skills: ${out.liveSkills} | incoming: ${out.incoming} | segments: ${out.segments}\n`);
+    console.log(`live skills: ${out.liveSkills} | incoming: ${out.incoming} | segments: ${out.segments} | categories: ${out.categories}\n`);
     for (const r of out.results) {
       console.log(`  ${r.ok ? 'PASS' : 'FAIL'}  ${r.name}${r.detail ? ` — ${r.detail}` : ''}`);
     }

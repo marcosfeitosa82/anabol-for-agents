@@ -82,7 +82,37 @@ The TOC and the line numbers depend on each other — writing the TOC shifts eve
 Anabol therefore indexes in **two passes**: build → render TOC → rebuild. The stored lines
 match the written file, so the first read uses the fast path.
 
-## 4. Segment read
+## 4. Routing
+
+`find` ranks two kinds of index entry:
+
+- **segments** — one merged sub-skill, with an exact line range;
+- **categories** — one whole category skill (`index.categories`), from line 1 to the end of
+  the file. The meta-skill is never an entry, so it can never be routed to.
+
+Both use the same score — `max(overlap, containment)` over id, description, and keywords.
+Results are sorted by score, then a segment wins a tie against a category, then by id.
+Entries below the default threshold of **0.35** are dropped: an off-domain task returns
+`NO_MATCH` (or `[]` with `--json`) instead of a low-confidence guess.
+
+A category entry is the fallback when no merged segment matches but the category as a whole
+does — for example, a `security` task that no single scanner covers. The orchestrator routes
+first, then reads:
+
+- segment winner → `anr <segment-id>` reads only those lines;
+- category winner → `anr <category-id>` reads the whole category file.
+
+`find` is advisory. A score just above the threshold can still be the wrong entry; when the
+winner is not obviously relevant, skip it and read the task's own files instead.
+
+### Opt-in route log
+
+`find` writes nothing by default. With `--log`, it appends one JSON line per decision to
+`<structure>/.anabol/route-log.jsonl` — local only, never sent anywhere. `npm run route:report`
+summarizes matched/no-match counts, the most frequent winners, and the last misses, which is
+the raw material for improving descriptions and keywords.
+
+## 5. Segment read
 
 At task time the orchestrator:
 
@@ -100,7 +130,7 @@ that `lines[startLine-1]` equals the anchor. If it does not, it scans for
 `<!-- ANABOL:SEGMENT id=<id> -->` … `<!-- /ANABOL:SEGMENT id=<id> -->` and reads from
 there. It never returns the wrong lines. Running `reindex` restores the fast path.
 
-## 5. Idempotency
+## 6. Idempotency
 
 Before merging, Anabol removes any existing segment with the same id — including the
 `desc=` variant of the marker. Re-installing a package replaces segments instead of

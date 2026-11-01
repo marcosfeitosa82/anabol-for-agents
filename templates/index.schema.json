@@ -1,14 +1,14 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Anabol Segment Index",
-  "description": "Maps each merged sub-skill to its category skill, line range, and anchor so the orchestrator can read only the needed segment.",
+  "title": "Anabol Routing Index",
+  "description": "Maps each merged sub-skill and each whole category skill to its file, line range, and anchor so the orchestrator can route and read only what it needs.",
   "type": "object",
-  "required": ["version", "generatedAt", "segments"],
+  "required": ["version", "generatedAt", "segments", "categories"],
   "additionalProperties": false,
   "properties": {
     "version": {
       "type": "integer",
-      "const": 1,
+      "const": 2,
       "description": "Index format version."
     },
     "generatedAt": {
@@ -80,6 +80,56 @@
               "package": { "type": "string", "description": "Origin package/repo name." },
               "path": { "type": "string", "description": "Original SKILL.md path in the source package." }
             }
+          }
+        }
+      }
+    },
+    "categories": {
+      "type": "array",
+      "description": "One entry per whole category skill; the Anabol meta-skill is never a routing entry.",
+      "items": {
+        "type": "object",
+        "required": ["id", "category", "file", "startLine", "endLine", "anchor", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "description": "Category skill id (its directory name); unique across the index."
+          },
+          "category": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "description": "Same as id: the category this entry describes."
+          },
+          "file": {
+            "type": "string",
+            "description": "Path to the category SKILL.md, relative to structureRoot."
+          },
+          "startLine": {
+            "type": "integer",
+            "const": 1,
+            "description": "Whole categories always start at line 1."
+          },
+          "endLine": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "1-based last line of the file (inclusive)."
+          },
+          "anchor": {
+            "type": "string",
+            "minLength": 1,
+            "description": "First line of the file (usually the frontmatter delimiter)."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Routing description from the category frontmatter."
+          },
+          "keywords": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Frequent category-prose tokens, excluding merged segment bodies."
           }
         }
       }

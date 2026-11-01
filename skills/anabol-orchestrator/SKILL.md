@@ -1,6 +1,6 @@
 ---
 name: anabol-orchestrator
-description: Install skill packages by merging them into existing category skills (never growing skill count) and read only the indexed line range of a merged segment at task time. Use when installing a skill package, adding capabilities, checking installed segments, or when a task matches a merged sub-skill.
+description: Install skill packages by merging them into existing category skills (never growing skill count) and route each task to a merged segment or a whole category, reading only the indexed lines. Use when installing a skill package, adding capabilities, routing a task, checking installed segments, or when a task matches a merged sub-skill.
 ---
 
 # Anabol Orchestrator
@@ -32,7 +32,7 @@ add a new skill or agent directory.
 
 Re-installing the same package is idempotent: the old segment is replaced, not duplicated.
 
-## Read a merged sub-skill (the token-saving path)
+## Route a task (the token-saving path)
 
 1. Route **without loading the index into context**:
 
@@ -48,23 +48,38 @@ Re-installing the same package is idempotent: the old segment is replaced, not d
    ```
 
    It prints `id`, `file`, `startLine-endLine`, `description`, and `score` — a few hundred
-   bytes, not the whole index.
+   bytes, not the whole index. The winner is one of two kinds:
 
-2. Read **only** that range:
+   - a **segment** — a merged sub-skill, with an exact line range;
+   - a **category** — a whole base skill. It spans the whole file and is the fallback when no
+     merged segment matches but the category as a whole does.
+
+   `NO_MATCH` means nothing reached the confidence threshold (default **0.35**). Do not read a
+   skill from the index in that case; continue with the task's own files. For one query you
+   can override the threshold with `--threshold N` (0–1), or ignore whole categories with
+   `--segments-only`. The score is advisory: a weak match can still be the wrong entry.
+
+2. Read **only** the winner:
 
    ```bash
-   anr <segment-id>
+   anr <segment-id>     # segment winner: those lines only
+   anr <category-id>    # category winner: the whole category (intended fallback)
    ```
 
    or `read(path=<skills-root>/<file>, offset=startLine, limit=endLine - startLine + 1)`
    when you already have the file and range.
 
-   If the segment lists `assets`, those files live at `<skills-root>/<asset-path>`.
-   Read one only when the task needs it; the segment body already points at the right path.
+   If the entry lists `assets`, those files live at `<skills-root>/<asset-path>`.
+   Read one only when the task needs it; the body already points at the right path.
 
-3. If you need to browse instead of route, read `<skills-root>/.anabol/index.json`.
+3. If you need to browse instead of route, read `<skills-root>/.anabol/index.json`
+   (`segments` and `categories`).
 
 4. Do **not** read the whole category `SKILL.md` when one segment answers the task.
+
+To collect local feedback for future improvements, pass `--log` to `find`. It appends one
+JSON line per decision to `<skills-root>/.anabol/route-log.jsonl`; nothing leaves the machine.
+`npm run route:report` summarizes hits, misses, and the most frequent winners.
 
 If the file was edited and the anchor no longer matches:
 

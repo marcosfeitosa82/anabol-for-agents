@@ -167,6 +167,27 @@ Four skills that ship files (`c4-architecture`, `mermaid-diagrams`, `qa-test-pla
 The per-task gain against a separate skill is parity (3.1%–7.8%); the real gain is not
 reading the whole merged category (46%–86% smaller) and not registering four more skills.
 
+### 7. Router coverage (2026-11-01)
+
+Before the router, `find` scored only merged segments and had no confidence threshold, so a
+task with no matching segment got a low-confidence guess — and every whole category skill was
+unreachable.
+
+| Metric | Before | After | Delta |
+| --- | ---: | ---: | ---: |
+| Top-1 routing (12 labeled cases) | 6/12 (50%) | **12/12 (100%)** | +50 pp |
+| Off-domain queries rejected | 0/4 | **4/4** | +4 |
+| Self-routing (every index entry) | — | **20/20** | — |
+| Index size | 15,733 B | see `measurements/2026-11-01-router-eval.json` | — |
+| `find` output | ~500 B | ~500 B | ~0 |
+| Registered skills | 11 | 11 | 0 |
+
+The labeled cases and off-domain queries live in `scripts/routing-cases.json`;
+`npm run eval:routing` reproduces the table. Whole-category entries add one row per base
+skill to the index (the meta-skill is excluded), so the index grows slightly while the skill
+count stays the same. The confidence threshold is `0.35`; it was calibrated on a copy in
+`/tmp` (`0.30` rejected only 3/4 off-domain, `0.35` and `0.40` both gave 12/12 and 4/4).
+
 ## Does it match the proposal?
 
 The project promises: no count growth, no tool-limit surprises, lower token/memory cost,
