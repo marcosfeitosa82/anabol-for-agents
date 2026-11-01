@@ -229,6 +229,91 @@ test('install rewrites only the categories it touched', () => {
   }
 });
 
+test('readById refuses an index path that escapes the structure root', () => {
+  const root = makeStructure();
+  const outside = path.join(root, '..', `${path.basename(root)}-escaped.md`);
+  try {
+    install({ sourceDir: SOURCE, structureRoot: root });
+    fs.writeFileSync(outside, 'escaped content\n', 'utf8');
+
+    const index = readIndex(root);
+    const target = index.segments[0];
+    target.file = `../${path.basename(outside)}`;
+    fs.writeFileSync(path.join(root, INDEX_DIR, INDEX_FILE), JSON.stringify(index), 'utf8');
+
+    assert.throws(
+      () => readById({ structureRoot: root, id: target.id }),
+      /path escapes structure root/,
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+    fs.rmSync(outside, { force: true });
+  }
+});
+
+test('the index schema stays v2 with the documented entry shape', () => {
+  const root = makeStructure();
+  try {
+    install({ sourceDir: SOURCE, structureRoot: root });
+    const index = readIndex(root);
+
+    assert.deepStrictEqual(
+      Object.keys(index).sort(),
+      ['categories', 'generatedAt', 'segments', 'structureRoot', 'version'].sort(),
+    );
+    assert.strictEqual(index.version, 2);
+    assert.ok(!Number.isNaN(Date.parse(index.generatedAt)));
+    assert.strictEqual(path.resolve(index.structureRoot), path.resolve(root));
+
+    const entryKeys = ['anchor', 'category', 'description', 'endLine', 'file', 'id', 'keywords', 'startLine'];
+    for (const entry of [...index.segments, ...index.categories]) {
+      assert.deepStrictEqual(Object.keys(entry).sort(), entryKeys.slice().sort());
+      assert.strictEqual(typeof entry.id, 'string');
+      assert.strictEqual(typeof entry.category, 'string');
+      assert.strictEqual(typeof entry.file, 'string');
+      assert.ok(Number.isInteger(entry.startLine) && entry.startLine >= 1);
+      assert.ok(Number.isInteger(entry.endLine) && entry.endLine >= entry.startLine);
+      assert.strictEqual(typeof entry.anchor, 'string');
+      assert.strictEqual(typeof entry.description, 'string');
+      assert.ok(Array.isArray(entry.keywords) && entry.keywords.every((k) => typeof k === 'string'));
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('readById prefers a segment when a category shares its id', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'anabol-shadow-'));
+  try {
+    fs.mkdirSync(path.join(root, 'shadow'));
+    const content = [
+      '---',
+      'name: shadow',
+      'description: Shadow category.',
+      '---',
+      '',
+      '<!-- ANABOL:SEGMENTS -->',
+      '',
+      '<!-- ANABOL:SEGMENT id=shadow desc=Segment%20shadow -->',
+      '## shadow',
+      '',
+      'Segment body',
+      '<!-- /ANABOL:SEGMENT id=shadow -->',
+      '',
+      '<!-- /ANABOL:SEGMENTS -->',
+      '',
+    ].join('\n');
+    fs.writeFileSync(path.join(root, 'shadow', 'SKILL.md'), content, 'utf8');
+
+    reindex({ structureRoot: root });
+    const result = readById({ structureRoot: root, id: 'shadow' });
+    assert.strictEqual(result.whole, false);
+    assert.ok(result.text.includes('Segment body'));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('first install on an empty structure creates categories for the source', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'anabol-empty-'));
   try {

@@ -49,6 +49,11 @@ function proseOnly(body) {
  * @param {string} content  full category SKILL.md text
  * @returns {Array<{id:string,category:string,file:string,startLine:number,endLine:number,anchor:string,description:string}>}
  */
+/** Collapse YAML block scalars and stray whitespace into one display line. */
+function oneLine(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
 function indexCategory(categoryId, fileRel, content) {
   const lines = String(content).replace(/\r\n/g, '\n').split('\n');
   const out = [];
@@ -57,7 +62,7 @@ function indexCategory(categoryId, fileRel, content) {
     const m = SEGMENT_RE.exec(lines[i].trim());
     if (!m) continue;
     const id = m[1];
-    const description = decodeDesc(m[2]);
+    const description = oneLine(decodeDesc(m[2]));
 
     // Heading is the next non-empty line (`## <id>`).
     let headingLine = i + 1;
@@ -142,7 +147,7 @@ function indexWholeCategories(categoryContents, opts = {}) {
       startLine: 1,
       endLine: text.split('\n').length,
       anchor: firstLine || '---',
-      description: frontmatter.description || id.replace(/-/g, ' '),
+      description: oneLine(frontmatter.description || id.replace(/-/g, ' ')),
       keywords: topTokens(proseOnly(stripMergedBlocks(body)), 40),
     });
   }

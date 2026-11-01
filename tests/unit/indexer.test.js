@@ -51,6 +51,28 @@ test('indexCategory finds exact ranges and anchors', () => {
   assert.deepStrictEqual(beta.keywords, ['beta', 'body']);
 });
 
+test('indexCategory normalizes a multiline segment description to one line', () => {
+  const multiline = CONTENT.replace('desc=Alpha%20thing', 'desc=Alpha%20thing%0ASecond%20line');
+  const segs = indexCategory('testing', 'testing/SKILL.md', multiline);
+  assert.strictEqual(segs[0].description, 'Alpha thing Second line');
+});
+
+test('buildIndex normalizes a YAML block-scalar category description to one line', () => {
+  const block = [
+    '---',
+    'name: testing',
+    'description: |',
+    '  Category for testing',
+    '  and QA.',
+    '---',
+    '',
+    '# testing',
+    '',
+  ].join('\n');
+  const index = buildIndex({ testing: block });
+  assert.strictEqual(index.categories[0].description, 'Category for testing and QA.');
+});
+
 test('decodeDesc handles URL encoding and malformed input', () => {
   assert.strictEqual(decodeDesc('Hello%20world%21'), 'Hello world!');
   assert.strictEqual(decodeDesc(''), '');

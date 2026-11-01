@@ -16,7 +16,7 @@ const { buildIndex } = require('./indexer');
 const { rankEntries, DEFAULT_THRESHOLD } = require('./router');
 const { readSegment } = require('./segment');
 const { collectAssets, rewriteAssetRefs, copyAssets, removeAssets, listAssets, attachAssets } = require('./assets');
-const { TOC_OPEN, TOC_CLOSE, SEGMENTS_OPEN, SEGMENTS_CLOSE } = require('./lib');
+const { TOC_OPEN, TOC_CLOSE, SEGMENTS_OPEN, SEGMENTS_CLOSE, safeJoin } = require('./lib');
 
 const INDEX_DIR = '.anabol';
 const INDEX_FILE = 'index.json';
@@ -273,13 +273,13 @@ function readById(opts) {
 
   const seg = index.segments.find((s) => s.id === id);
   if (seg) {
-    const content = fs.readFileSync(path.join(structureRoot, seg.file), 'utf8');
+    const content = fs.readFileSync(safeJoin(structureRoot, seg.file), 'utf8');
     return { ...readSegment(content, seg), whole: false, segment: seg };
   }
 
   const category = (index.categories || []).find((c) => c.id === id);
   if (category) {
-    const content = fs.readFileSync(path.join(structureRoot, category.file), 'utf8');
+    const content = fs.readFileSync(safeJoin(structureRoot, category.file), 'utf8');
     const linesRead = content.split('\n').length;
     return {
       text: content,

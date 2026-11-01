@@ -107,7 +107,6 @@ function main() {
         limit: args.limit ? Number(args.limit) : 1,
         threshold,
         includeCategories: !args['segments-only'],
-        log: !!args.log,
       });
       if (args.log) {
         appendRouteLog(structure, {
