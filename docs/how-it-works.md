@@ -79,8 +79,10 @@ absolute paths are untouched. The category stays self-contained: copying the cat
 directory carries its assets with it.
 
 The TOC and the line numbers depend on each other — writing the TOC shifts every segment.
-Anabol therefore indexes in **two passes**: build → render TOC → rebuild. The stored lines
-match the written file, so the first read uses the fast path.
+Anabol therefore runs a fixed-point cycle: build → render TOC → rebuild → render TOC →
+build. The TOC has a fixed number of lines, so a second render is enough to absorb any
+range-width change; the final build stores ranges that match the written file, so the first
+read uses the fast path.
 
 ## 4. Routing
 

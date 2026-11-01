@@ -90,7 +90,8 @@ pre-filter to get wrong, and the same query always returns the same winner.
 
 - **Count never grows** when at least one category exists.
 - **One segment per incoming id** in the whole structure (removal scans every category).
-- **Index lines match the file** after install (two-pass indexing).
+- **Index lines match the file** after install (fixed-point indexing: three builds, two TOC
+  renders).
 - **Reads never return wrong lines**: anchor check, then marker fallback.
 - **Install is idempotent**: re-running produces the same set of segments.
 - **Dry run writes nothing**: no category edits, no `.anabol/`.

@@ -185,7 +185,9 @@ unreachable.
 The labeled cases and off-domain queries live in `scripts/routing-cases.json`;
 `npm run eval:routing` reproduces the table. Whole-category entries add one row per base
 skill to the index (the meta-skill is excluded), so the index grows slightly while the skill
-count stays the same. The confidence threshold is `0.35`; it was calibrated on a copy in
+count stays the same. The v2 index budget is **32 KB**; the earlier 25 KB estimate predates
+whole-category entries and the index never enters the agent context. The confidence
+threshold is `0.35`; it was calibrated on a copy in
 `/tmp` (`0.30` rejected only 3/4 off-domain, `0.35` and `0.40` both gave 12/12 and 4/4).
 
 ## Does it match the proposal?

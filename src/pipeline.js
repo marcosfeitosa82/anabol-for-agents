@@ -150,9 +150,11 @@ function install(opts) {
   }
 
   // Index + TOC are mutually dependent: the TOC shows line ranges, and writing
-  // the TOC shifts those lines. Do it in two passes so the stored lines are the
-  // real ones (no fallback needed on the first read). Only touched categories
-  // are re-rendered, so untouched files keep matching their index entries.
+  // the TOC shifts those lines. Iterate to a fixed point (build, render, build,
+  // render, build) so the stored lines are the real ones (no fallback needed on
+  // the first read). The TOC line count is fixed, so two renders are enough for
+  // range-width changes. Only touched categories are re-rendered, so untouched
+  // files keep matching their index entries.
   const buildFor = () =>
     buildIndex(contents, {
       structureRoot,

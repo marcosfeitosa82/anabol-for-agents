@@ -157,7 +157,7 @@ The target is **≤ 20 KB per task packet** (plan section + spec section + 1–3
 | Audit | `npm run audit` | no regression against `docs/audit-results.json` |
 | Latency | `anf` 10 runs | p50 ≤ 600 ms |
 | Hot path | `anf "..." \| wc -c` | ≤ 1 KB |
-| Index size | `stat .anabol/index.json` | ≤ 25 KB |
+| Index size | `stat .anabol/index.json` | ≤ 32 KB (v2; the 25 KB estimate predates category entries; measured 28,663 B) |
 | Idempotency | `npm run verify` | byte-identical reinstall |
 
 ### Rollback
@@ -880,7 +880,7 @@ PY
 anf "document the architecture with C4 diagrams" | wc -c
 ```
 
-Record the new index size (expected ~24 KB), `anf` p50 (expected ≤ 600 ms), and the `find` output bytes (expected ≤ 1 KB).
+Record the new index size (expected ≤ 32 KB for the v2 shape), `anf` p50 (expected ≤ 600 ms), and the `find` output bytes (expected ≤ 1 KB).
 
 - [ ] **Step 3: Write the measurement artifact**
 
