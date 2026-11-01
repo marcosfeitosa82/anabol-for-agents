@@ -2,7 +2,7 @@
 
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { indexCategory, buildIndex, decodeDesc, SEGMENT_RE } = require('../../src/indexer');
+const { indexCategory, buildIndex, decodeDesc, stripMergedBlocks, SEGMENT_RE } = require('../../src/indexer');
 
 const CONTENT = [
   '---', // 1
@@ -76,7 +76,7 @@ test('buildIndex merges categories and sorts by category then line', () => {
     { testing: CONTENT, security: CONTENT.replace(/alpha/g, 'gamma').replace(/beta/g, 'delta') },
     { structureRoot: '/skills' },
   );
-  assert.strictEqual(index.version, 1);
+  assert.strictEqual(index.version, 2);
   assert.strictEqual(index.structureRoot, '/skills');
   assert.strictEqual(index.segments.length, 4);
   assert.deepStrictEqual(
@@ -88,4 +88,36 @@ test('buildIndex merges categories and sorts by category then line', () => {
 test('buildIndex uses the provided fileFor mapping', () => {
   const index = buildIndex({ testing: CONTENT }, { fileFor: (c) => `${c}/custom.md` });
   assert.strictEqual(index.segments[0].file, 'testing/custom.md');
+});
+
+test('buildIndex adds one whole-category entry per skill and excludes the meta-skill', () => {
+  const withDescription = CONTENT.replace('name: testing', 'name: testing\ndescription: Category for testing.');
+  // The meta-skill carries no merged segments in practice; keep it segment-free
+  // so this test isolates the category-entry shape from the segment count.
+  const meta = '---\nname: anabol-orchestrator\ndescription: Meta orchestrator.\n---\n\n# meta\n';
+  const index = buildIndex(
+    { testing: withDescription, 'anabol-orchestrator': meta },
+    { fileFor: (c) => `${c}/SKILL.md` },
+  );
+  assert.strictEqual(index.version, 2);
+  assert.strictEqual(index.segments.length, 2);
+  assert.deepStrictEqual(index.categories.map((c) => c.id), ['testing']);
+
+  const category = index.categories[0];
+  assert.strictEqual(category.category, 'testing');
+  assert.strictEqual(category.file, 'testing/SKILL.md');
+  assert.strictEqual(category.startLine, 1);
+  assert.strictEqual(category.endLine, withDescription.split('\n').length);
+  assert.strictEqual(category.anchor, '---');
+  assert.strictEqual(category.description, 'Category for testing.');
+  assert.ok(!category.keywords.includes('alpha'), 'segment-only keyword leaked');
+  assert.ok(!category.keywords.includes('beta'), 'segment-only keyword leaked');
+});
+
+test('stripMergedBlocks removes TOC and merged segments but keeps the category prose', () => {
+  const stripped = stripMergedBlocks(CONTENT);
+  assert.ok(!stripped.includes('ANABOL:TOC'));
+  assert.ok(!stripped.includes('ANABOL:SEGMENT'));
+  assert.ok(!stripped.includes('Body alpha'));
+  assert.ok(stripped.includes('name: testing'));
 });

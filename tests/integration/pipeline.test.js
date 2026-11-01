@@ -52,7 +52,7 @@ test('AC-002: every merged skill is indexed with a range and anchor', () => {
   try {
     install({ sourceDir: SOURCE, structureRoot: root });
     const index = readIndex(root);
-    assert.strictEqual(index.version, 1);
+    assert.strictEqual(index.version, 2);
     assert.strictEqual(index.segments.length, 8);
     for (const seg of index.segments) {
       assert.ok(seg.startLine >= 1, `${seg.id} startLine`);

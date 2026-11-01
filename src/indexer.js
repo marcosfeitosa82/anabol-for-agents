@@ -8,9 +8,12 @@
  * Pure — operates on text, no filesystem access.
  */
 
-const { topTokens } = require('./lib');
+const { parseFrontmatter, topTokens } = require('./lib');
 const SEGMENT_RE = /^<!-- ANABOL:SEGMENT id=([a-z0-9-]+)(?: desc=(\S*))? -->$/;
 const SEGMENT_CLOSE_RE = /^<!-- \/ANABOL:SEGMENT id=([a-z0-9-]+) -->$/;
+
+/** The Anabol meta-skill is never a routing entry. */
+const META_SKILL_ID = 'anabol-orchestrator';
 
 /**
  * Decode an optional URL-encoded description attribute.
@@ -96,10 +99,63 @@ function indexCategory(categoryId, fileRel, content) {
 }
 
 /**
+ * Remove Anabol-generated markup from a category file: the TOC block, every
+ * merged segment block, and the segment wrapper markers. The remaining text is
+ * the category's own prose, which is what whole-category keywords are built
+ * from (a category must not duplicate its segments' keywords).
+ *
+ * @param {string} text
+ * @returns {string}
+ */
+function stripMergedBlocks(text) {
+  return String(text)
+    .replace(/<!-- ANABOL:TOC -->[\s\S]*?<!-- \/ANABOL:TOC -->\n?/g, '')
+    .replace(/<!-- ANABOL:SEGMENT id=[a-z0-9-]+(?: desc=\S*)? -->[\s\S]*?<!-- \/ANABOL:SEGMENT id=[a-z0-9-]+ -->\n?/g, '')
+    .replace(/<!-- ANABOL:SEGMENTS -->\n?/g, '')
+    .replace(/<!-- \/ANABOL:SEGMENTS -->\n?/g, '')
+    .replace(/\n{3,}/g, '\n\n');
+}
+
+/**
+ * Build one routing entry for every whole category skill.
+ *
+ * @param {Record<string,string>} categoryContents
+ * @param {{fileFor?: (category: string) => string, excludeIds?: string[]}} [opts]
+ * @returns {Array<{id:string,category:string,file:string,startLine:number,endLine:number,anchor:string,description:string,keywords:string[]}>}
+ */
+function indexWholeCategories(categoryContents, opts = {}) {
+  const fileFor = opts.fileFor || ((c) => `${c}/SKILL.md`);
+  const exclude = new Set(opts.excludeIds || []);
+  exclude.add(META_SKILL_ID);
+
+  const out = [];
+  for (const [id, content] of Object.entries(categoryContents)) {
+    if (exclude.has(id)) continue;
+    const text = String(content).replace(/\r\n/g, '\n');
+    const { frontmatter, body } = parseFrontmatter(text);
+    const firstLine = text.split('\n')[0].trim();
+
+    out.push({
+      id,
+      category: id,
+      file: fileFor(id),
+      startLine: 1,
+      endLine: text.split('\n').length,
+      anchor: firstLine || '---',
+      description: frontmatter.description || id.replace(/-/g, ' '),
+      keywords: topTokens(proseOnly(stripMergedBlocks(body)), 40),
+    });
+  }
+
+  out.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  return out;
+}
+
+/**
  * Build the full index from a map of category id → content.
  * @param {Record<string,string>} categoryContents
  * @param {{structureRoot?: string, fileFor?: (category: string) => string}} [opts]
- * @returns {{version:number, generatedAt:string, structureRoot?:string, segments:Array}}
+ * @returns {{version:number, generatedAt:string, structureRoot?:string, segments:Array, categories:Array}}
  */
 function buildIndex(categoryContents, opts = {}) {
   const fileFor = opts.fileFor || ((c) => `${c}/SKILL.md`);
@@ -109,13 +165,30 @@ function buildIndex(categoryContents, opts = {}) {
   }
   segments.sort((a, b) => (a.category === b.category ? a.startLine - b.startLine : a.category < b.category ? -1 : 1));
 
+  // A category that is also a merged segment id would shadow that segment in
+  // readById; the segment keeps the id and the whole-category entry is dropped.
+  const categories = indexWholeCategories(categoryContents, {
+    fileFor,
+    excludeIds: segments.map((s) => s.id),
+  });
+
   const index = {
-    version: 1,
+    version: 2,
     generatedAt: new Date().toISOString(),
     segments,
+    categories,
   };
   if (opts.structureRoot) index.structureRoot = opts.structureRoot;
   return index;
 }
 
-module.exports = { indexCategory, buildIndex, decodeDesc, SEGMENT_RE, SEGMENT_CLOSE_RE };
+module.exports = {
+  indexCategory,
+  indexWholeCategories,
+  buildIndex,
+  stripMergedBlocks,
+  decodeDesc,
+  META_SKILL_ID,
+  SEGMENT_RE,
+  SEGMENT_CLOSE_RE,
+};
