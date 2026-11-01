@@ -25,6 +25,16 @@ jobs:
       - name: Verify end to end (fixture)
         run: node scripts/verify.js --structure tests/fixtures/target-structure
 
+      - name: Routing eval gate (fixture)
+        run: |
+          cp -a tests/fixtures/target-structure "$RUNNER_TEMP/router-structure"
+          node src/cli.js install --source tests/fixtures/source-ecc --structure "$RUNNER_TEMP/router-structure"
+          node scripts/eval-routing.js \
+            --structure "$RUNNER_TEMP/router-structure" \
+            --cases scripts/routing-cases-fixture.json \
+            --min-accuracy 1 \
+            --min-off-domain 1
+
       - name: Shell syntax
         run: sh -n scripts/install.sh scripts/uninstall.sh
 

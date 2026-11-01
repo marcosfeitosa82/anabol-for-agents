@@ -37,10 +37,12 @@
   "noMatchBytes": 9,
   "routeLog": {
     "tasksRecorded": 7,
-    "noMatch": 2,
-    "rejected": 5,
+    "recordedNoMatch": 2,
+    "recordedAdvisoryMatches": 5,
+    "finalNoMatch": 5,
+    "finalAdvisoryMatches": 2,
     "usedAsAuthoritative": 0,
-    "totalAnfBytes": 1435
+    "totalAnfBytes": 1437
   },
   "commands": [
     "npm test",

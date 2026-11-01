@@ -1,11 +1,15 @@
 #!/bin/sh
 # anf — Anabol find.
-# Route a task to the best merged segment without loading the index into context.
+# Route a task to the best merged segment or whole category without loading
+# the index into context.
 #
 #   anf "detect SQL injection vulnerabilities"
 #   anf "design a database schema with indexes"
 #   anf "testing" --limit 3
-#   anf "openapi types" --json
+#   anf "openapi types" --threshold 0.5 --json
+#   anf "testing" --segments-only --log
+#
+# Prints NO_MATCH when nothing reaches the threshold.
 #
 # Override the structure with ANABOL_STRUCTURE=/path/to/skills.
 set -eu

@@ -161,6 +161,9 @@ function buildIndex(categoryContents, opts = {}) {
   const fileFor = opts.fileFor || ((c) => `${c}/SKILL.md`);
   const segments = [];
   for (const [category, content] of Object.entries(categoryContents)) {
+    // The meta-skill is infrastructure, not a routable capability. A package
+    // merged into it must not leak a segment into `find`.
+    if (category === META_SKILL_ID) continue;
     segments.push(...indexCategory(category, fileFor(category), content));
   }
   segments.sort((a, b) => (a.category === b.category ? a.startLine - b.startLine : a.category < b.category ? -1 : 1));

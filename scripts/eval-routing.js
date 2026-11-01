@@ -43,6 +43,36 @@ function pct(hit, total) {
   return Math.round((hit / total) * 100);
 }
 
+/** Convert a "hits/total" summary string to a 0..1 ratio (empty set counts as 1). */
+function ratio(fraction) {
+  const [hit, total] = String(fraction).split('/').map(Number);
+  if (!Number.isFinite(hit) || !Number.isFinite(total) || total === 0) return 1;
+  return hit / total;
+}
+
+/**
+ * Decide whether an eval run satisfies the CI gate. Both metrics are ratios in
+ * [0, 1]; an empty case set passes, so adding `--cases` later never fails CI on
+ * day one.
+ *
+ * @param {{top1:string, offDomain:string}} summary
+ * @param {{minAccuracy?:number, minOffDomain?:number}} [opts]
+ * @returns {boolean}
+ */
+function passesGate(summary, opts = {}) {
+  const minAccuracy = opts.minAccuracy === undefined ? 0 : Number(opts.minAccuracy);
+  const minOffDomain = opts.minOffDomain === undefined ? 0 : Number(opts.minOffDomain);
+  return ratio(summary.top1) >= minAccuracy && ratio(summary.offDomain) >= minOffDomain;
+}
+
+/** Normalize a `--min-*` argument: 0..1 is a fraction, >1 is a percentage. */
+function gateMin(raw, name) {
+  if (raw === undefined) return 0;
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value < 0) throw new Error(`${name} must be a non-negative number`);
+  return value > 1 ? value / 100 : value;
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
   const structure = path.resolve(
@@ -53,7 +83,8 @@ function main() {
     throw new Error('--threshold must be a number in [0, 1]');
   }
   const includeCategories = !args['segments-only'];
-  const cases = JSON.parse(fs.readFileSync(CASES_FILE, 'utf8'));
+  const casesFile = args.cases ? path.resolve(args.cases) : CASES_FILE;
+  const cases = JSON.parse(fs.readFileSync(casesFile, 'utf8'));
 
   const topFor = (query) =>
     findSegments({ structureRoot: structure, query, limit: 1, threshold, includeCategories })[0] || null;
@@ -131,8 +162,8 @@ function main() {
   let min = args['min-accuracy'] === undefined ? 0 : Number(args['min-accuracy']);
   if (!Number.isFinite(min) || min < 0) throw new Error('--min-accuracy must be a non-negative number');
   if (min > 1) min /= 100; // accept 100 as well as 1
-  const accuracy = labeled.length ? top1 / labeled.length : 0;
-  if (accuracy < min) process.exitCode = 1;
+  const minOffDomain = gateMin(args['min-off-domain'], '--min-off-domain');
+  if (!passesGate(summary, { minAccuracy: min, minOffDomain })) process.exitCode = 1;
 }
 
 if (require.main === module) {
@@ -144,4 +175,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { parseArgs, main };
+module.exports = { parseArgs, gateMin, passesGate, main };

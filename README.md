@@ -56,16 +56,15 @@ node src/cli.js install \
 # 4. Install the short commands (optional, recommended)
 ./scripts/install-commands.sh   # anf, anr
 
-# 5. Route a task and read only its segment
-anf "detect SQL injection"
-anr sql-injection-scan
+# 5. Route a task, then read only the winner
+anf "detect SQL injection vulnerabilities"   # security-review (whole category)
+anr security-review
 
-# A category winner reads the whole category (fallback when no segment matches)
-anf "round-trip handoff between backend and frontend"
-anr change-impact
+anf "design a database schema with indexes"  # database-schema-designer (segment)
+anr database-schema-designer
 
 # Off-domain tasks are rejected instead of guessed
-anf "bake a chocolate cake"          # NO_MATCH
+anf "bake a chocolate cake"                  # NO_MATCH
 anf "review this pull request" --threshold 0.5
 ```
 
@@ -99,25 +98,39 @@ ANABOL_STRUCTURE=/tmp/other-skills anf "testing"
 ## What the orchestrator reads
 
 `anabol find --query "..."` scores the index **outside the model context** and prints only
-the winning entry. The index itself looks like this:
+the winning entry. The index itself is version 2 and has two arrays (abridged):
 
 ```json
 {
-  "id": "sql-injection-scan",
-  "category": "security",
-  "file": "security/SKILL.md",
-  "startLine": 31,
-  "endLine": 35,
-  "anchor": "## sql-injection-scan",
-  "description": "Detect SQL injection vulnerabilities."
+  "version": 2,
+  "segments": [
+    {
+      "id": "database-schema-designer",
+      "category": "change-impact",
+      "file": "change-impact/SKILL.md",
+      "startLine": 211,
+      "endLine": 893,
+      "anchor": "## database-schema-designer"
+    }
+  ],
+  "categories": [
+    {
+      "id": "security-review",
+      "file": "security-review/SKILL.md",
+      "startLine": 1,
+      "endLine": 512,
+      "anchor": "---"
+    }
+  ]
 }
 ```
 
-The agent reads `security/SKILL.md` with `offset=31, limit=5` — not the whole file, and not
-the whole index. A whole-category winner instead has `startLine: 1` and `endLine` equal to
-the file's line count; `read` reports `whole: true` for it. `find` prints `NO_MATCH` when no
-entry reaches the default threshold (`0.35`), so the orchestrator falls back to its own task
-context instead of reading a low-confidence skill.
+For a segment winner the agent reads `change-impact/SKILL.md` with `offset=211, limit=683`;
+for a category winner it reads the whole category file (`startLine: 1`). Either way it does
+not read the whole index. A category is the fallback when no merged segment matches but the
+category as a whole does. `find` prints `NO_MATCH` when no entry reaches the default threshold
+(`0.35`), so the orchestrator falls back to its own task context instead of reading a
+low-confidence skill.
 
 Every decision is scored **outside** the model context, and `find` never writes anything
 unless you pass `--log`. With `--log`, one local JSON line is appended to

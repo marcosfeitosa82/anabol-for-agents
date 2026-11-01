@@ -1,0 +1,21 @@
+{
+  "cases": [
+    { "query": "detect SQL injection vulnerabilities", "expect": "sql-injection-scan" },
+    { "query": "generate an API doc", "expect": "api-doc-writer" },
+    { "query": "scan for committed secrets", "expect": "secret-scanning" },
+    { "query": "review staged changes for a commit message", "expect": "commit-message-review" },
+    { "query": "plan end-to-end tests", "expect": "e2e-testing" },
+    { "query": "enforce a coverage threshold", "expect": "coverage-gate" },
+    { "query": "check the OWASP top 10", "expect": "owasp-top10" },
+    { "query": "write unit tests for a parser", "expect": "unit-test-writer" },
+    { "query": "documentation readme api docs", "expect": "documentation" },
+    { "query": "security review secret scanning", "expect": "security" },
+    { "query": "coverage gate for unit tests", "expect": "testing" }
+  ],
+  "offDomain": [
+    "bake a chocolate cake",
+    "translate this poem to French",
+    "what is the weather today",
+    "book a flight to Lisbon"
+  ]
+}

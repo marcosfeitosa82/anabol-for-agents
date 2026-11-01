@@ -114,6 +114,30 @@ test('buildIndex adds one whole-category entry per skill and excludes the meta-s
   assert.ok(!category.keywords.includes('beta'), 'segment-only keyword leaked');
 });
 
+test('buildIndex never routes the meta-skill, even if it contains a segment', () => {
+  const meta = [
+    '---',
+    'name: anabol-orchestrator',
+    'description: Meta orchestrator.',
+    '---',
+    '',
+    '<!-- ANABOL:SEGMENTS -->',
+    '',
+    '<!-- ANABOL:SEGMENT id=leaked desc=Leaked%20segment -->',
+    '## leaked',
+    '',
+    'Body leaked',
+    '<!-- /ANABOL:SEGMENT id=leaked -->',
+    '',
+    '<!-- /ANABOL:SEGMENTS -->',
+    '',
+  ].join('\n');
+  const index = buildIndex({ 'anabol-orchestrator': meta, testing: CONTENT });
+  assert.ok(!index.segments.some((s) => s.id === 'leaked'));
+  assert.ok(!index.segments.some((s) => s.category === 'anabol-orchestrator'));
+  assert.ok(!index.categories.some((c) => c.id === 'anabol-orchestrator'));
+});
+
 test('stripMergedBlocks removes TOC and merged segments but keeps the category prose', () => {
   const stripped = stripMergedBlocks(CONTENT);
   assert.ok(!stripped.includes('ANABOL:TOC'));
