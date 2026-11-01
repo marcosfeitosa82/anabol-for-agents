@@ -1,0 +1,31 @@
+{
+  "cases": [
+    { "query": "detect SQL injection vulnerabilities", "expect": "security-review" },
+    { "query": "write a failing test before implementation", "expect": "tdd-workflow" },
+    { "query": "resolve a git merge conflict and rebase", "expect": "git-workflow" },
+    { "query": "design a database schema with indexes", "expect": "database-schema-designer" },
+    { "query": "generate TypeScript types from an OpenAPI spec", "expect": "openapi-to-typescript" },
+    { "query": "document the architecture with C4 diagrams", "expect": "c4-architecture" },
+    { "query": "review staged changes for a commit message", "expect": "conventional-commit-review" },
+    { "query": "handle errors and retries in TypeScript", "expect": "error-handling" },
+    { "query": "run a production readiness audit", "expect": "production-audit" },
+    { "query": "hand off session context to another agent", "expect": "session-handoff" },
+    { "query": "clarify ambiguous requirements before coding", "expect": "requirements-clarity" },
+    { "query": "suggest better variable names", "expect": "naming-analyzer" }
+  ],
+  "offDomain": [
+    "bake a chocolate cake",
+    "translate this poem to French",
+    "what is the weather today",
+    "book a flight to Lisbon"
+  ],
+  "taskQueries": [
+    { "query": "write failing unit tests first TDD for a pure router module", "expect": "tdd-workflow" },
+    { "query": "index whole category entries and exclude the meta skill", "expect": "NO_MATCH" },
+    { "query": "route find to whole categories and read a whole category file", "expect": "NO_MATCH" },
+    { "query": "measure routing accuracy with an eval harness", "expect": "NO_MATCH" },
+    { "query": "add an opt-in local route log and report", "expect": "NO_MATCH" },
+    { "query": "verify end to end and update documentation", "expect": "NO_MATCH" },
+    { "query": "measure final results and write the report", "expect": "NO_MATCH" }
+  ]
+}

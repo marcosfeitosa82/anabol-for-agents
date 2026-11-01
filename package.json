@@ -14,6 +14,7 @@
     "test:integration": "node --test tests/integration/*.test.js",
     "audit": "node scripts/audit.js",
     "anabol": "node src/cli.js",
+    "eval:routing": "node scripts/eval-routing.js",
     "verify": "node scripts/verify.js"
   },
   "engines": {
