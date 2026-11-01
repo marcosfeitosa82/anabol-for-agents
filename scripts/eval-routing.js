@@ -7,7 +7,7 @@
  *   node scripts/eval-routing.js
  *   node scripts/eval-routing.js --segments-only --threshold 0   # old baseline
  *   node scripts/eval-routing.js --self
- *   node scripts/eval-routing.js --min-accuracy 1 --json
+ *   node scripts/eval-routing.js --min-accuracy 1 --min-cases 8 --json
  *
  * The structure defaults to $ANABOL_STRUCTURE or ~/.config/opencode/skills.
  * The index must already exist (run `anabol reindex` first).
@@ -55,14 +55,19 @@ function ratio(fraction) {
  * [0, 1]; an empty case set passes, so adding `--cases` later never fails CI on
  * day one.
  *
- * @param {{top1:string, offDomain:string}} summary
- * @param {{minAccuracy?:number, minOffDomain?:number}} [opts]
+ * @param {{top1:string, offDomain:string, cases?:number}} summary
+ * @param {{minAccuracy?:number, minOffDomain?:number, minCases?:number}} [opts]
  * @returns {boolean}
  */
 function passesGate(summary, opts = {}) {
   const minAccuracy = opts.minAccuracy === undefined ? 0 : Number(opts.minAccuracy);
   const minOffDomain = opts.minOffDomain === undefined ? 0 : Number(opts.minOffDomain);
-  return ratio(summary.top1) >= minAccuracy && ratio(summary.offDomain) >= minOffDomain;
+  const minCases = opts.minCases === undefined ? 0 : Number(opts.minCases);
+  return (
+    Number(summary.cases || 0) >= minCases &&
+    ratio(summary.top1) >= minAccuracy &&
+    ratio(summary.offDomain) >= minOffDomain
+  );
 }
 
 /** Normalize a `--min-*` argument: 0..1 is a fraction, >1 is a percentage. */
@@ -125,6 +130,7 @@ function main() {
   }
 
   const summary = {
+    cases: labeled.length,
     top1: `${top1}/${labeled.length}`,
     top1Pct: pct(top1, labeled.length),
     offDomain: `${rejected}/${offDomain.length}`,
@@ -163,7 +169,11 @@ function main() {
   if (!Number.isFinite(min) || min < 0) throw new Error('--min-accuracy must be a non-negative number');
   if (min > 1) min /= 100; // accept 100 as well as 1
   const minOffDomain = gateMin(args['min-off-domain'], '--min-off-domain');
-  if (!passesGate(summary, { minAccuracy: min, minOffDomain })) process.exitCode = 1;
+  const minCases = args['min-cases'] === undefined ? 0 : Number(args['min-cases']);
+  if (!Number.isInteger(minCases) || minCases < 0) {
+    throw new Error('--min-cases must be a non-negative integer');
+  }
+  if (!passesGate(summary, { minAccuracy: min, minOffDomain, minCases })) process.exitCode = 1;
 }
 
 if (require.main === module) {

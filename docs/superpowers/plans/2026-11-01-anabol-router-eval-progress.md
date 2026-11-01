@@ -48,5 +48,6 @@ Deferred-minor resolution (branch `fix/deferred-minors`):
 - Removed the unused `log` option from the `findSegments` call; logging remains in `cli.js`.
 - `readById` uses `safeJoin` for segment and category paths; a tampered index cannot escape the structure root.
 - `install.sh` gained opt-in `--commands`/`--bin-dir` and prints the `install-commands.sh` hint by default.
-- Added schema, CLI `--log`, and id-shadowing regression tests; `npm test` 103/103.
+- Added schema, CLI `--log`, and id-shadowing regression tests; `npm test` 106/106.
+- Holdout gate is `--min-accuracy 0.875 --min-cases 8`, so 6/8 cannot pass; the file hash is pinned in the test.
 - Added a frozen holdout: **7/8 top-1**, **4/4 off-domain**. The single miss is documented and was not used for tuning.

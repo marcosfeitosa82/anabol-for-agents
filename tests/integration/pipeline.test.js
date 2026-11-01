@@ -245,6 +245,14 @@ test('readById refuses an index path that escapes the structure root', () => {
       () => readById({ structureRoot: root, id: target.id }),
       /path escapes structure root/,
     );
+
+    const category = index.categories[0];
+    category.file = `../${path.basename(outside)}`;
+    fs.writeFileSync(path.join(root, INDEX_DIR, INDEX_FILE), JSON.stringify(index), 'utf8');
+    assert.throws(
+      () => readById({ structureRoot: root, id: category.id }),
+      /path escapes structure root/,
+    );
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
     fs.rmSync(outside, { force: true });
@@ -267,7 +275,9 @@ test('the index schema stays v2 with the documented entry shape', () => {
 
     const entryKeys = ['anchor', 'category', 'description', 'endLine', 'file', 'id', 'keywords', 'startLine'];
     for (const entry of [...index.segments, ...index.categories]) {
-      assert.deepStrictEqual(Object.keys(entry).sort(), entryKeys.slice().sort());
+      const keys = Object.keys(entry);
+      assert.deepStrictEqual(keys.filter((k) => k !== 'assets').sort(), entryKeys.slice().sort());
+      if (keys.includes('assets')) assert.ok(Array.isArray(entry.assets));
       assert.strictEqual(typeof entry.id, 'string');
       assert.strictEqual(typeof entry.category, 'string');
       assert.strictEqual(typeof entry.file, 'string');
@@ -306,9 +316,28 @@ test('readById prefers a segment when a category shares its id', () => {
     fs.writeFileSync(path.join(root, 'shadow', 'SKILL.md'), content, 'utf8');
 
     reindex({ structureRoot: root });
+    const index = readIndex(root);
+    assert.deepStrictEqual(index.segments.map((s) => s.id), ['shadow']);
+    assert.deepStrictEqual(index.categories, [], 'the whole-category entry is dropped to avoid shadowing');
+
+    // Force the ambiguous index that buildIndex prevents, so this test really
+    // exercises readById's segment-before-category precedence.
+    index.categories.push({
+      id: 'shadow',
+      category: 'shadow',
+      file: 'shadow/SKILL.md',
+      startLine: 1,
+      endLine: content.split('\n').length,
+      anchor: '---',
+      description: 'Shadow category.',
+      keywords: [],
+    });
+    fs.writeFileSync(path.join(root, INDEX_DIR, INDEX_FILE), JSON.stringify(index), 'utf8');
+
     const result = readById({ structureRoot: root, id: 'shadow' });
     assert.strictEqual(result.whole, false);
     assert.ok(result.text.includes('Segment body'));
+    assert.ok(!result.text.includes('description: Shadow category.'));
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

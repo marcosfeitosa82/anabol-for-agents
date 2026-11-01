@@ -41,6 +41,11 @@ function proseOnly(body) {
     .replace(/`[^`]*`/g, ' ');
 }
 
+/** Collapse YAML block scalars and stray whitespace into one display line. */
+function oneLine(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
 /**
  * Index all segments in one category file.
  *
@@ -49,11 +54,6 @@ function proseOnly(body) {
  * @param {string} content  full category SKILL.md text
  * @returns {Array<{id:string,category:string,file:string,startLine:number,endLine:number,anchor:string,description:string}>}
  */
-/** Collapse YAML block scalars and stray whitespace into one display line. */
-function oneLine(value) {
-  return String(value || '').replace(/\s+/g, ' ').trim();
-}
-
 function indexCategory(categoryId, fileRel, content) {
   const lines = String(content).replace(/\r\n/g, '\n').split('\n');
   const out = [];

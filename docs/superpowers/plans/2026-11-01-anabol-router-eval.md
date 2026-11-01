@@ -65,7 +65,7 @@ awk -v t="### Task 3:" '$0 ~ t {p=1} p && /^---$/ {exit} p' \
   docs/superpowers/plans/2026-11-01-anabol-router-eval.md
 ```
 
-A packet is: that section, the spec section it references, the files listed in the task, the routed skill segment (if any), and the progress file. Never load the whole ~47 KB plan or the 15.7 KB index per task.
+A packet is: that section, the spec section it references, the files listed in the task, the routed skill segment (if any), and the progress file. Never load the whole ~47 KB plan or the index (15.7 KB before the router, 28,663 B in the v2 shape) per task.
 
 **3. Hand off between tasks.** After each task, update `docs/superpowers/plans/2026-11-01-anabol-router-eval-progress.md` with: status, commit, files changed, commands and test results, the `anf` route used, and the next task. A fresh subagent reads only this file plus its task packet. This follows the `session-handoff` segment that `anf` routes to for context-heavy work.
 
@@ -916,7 +916,7 @@ In `docs/audit-comparative.md`, add:
 | --- | ---: | ---: | ---: |
 | Top-1 routing (12 cases) | 6/12 (50%) | 12/12 (100%) | +50 pp |
 | Off-domain rejected | 0/4 | 4/4 | +4 |
-| Index size | 15,733 B | ~24 KB | ~+8 KB |
+| Index size | 15,733 B | 28,663 B | +12,930 B |
 | `find` output | ~500 B | ~500 B | ~0 |
 | Registered skills | 11 | 11 | 0 |
 
