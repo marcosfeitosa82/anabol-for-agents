@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 20, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Test suite
+        run: npm test
+
+      - name: Shell syntax
+        run: sh -n scripts/install.sh scripts/uninstall.sh
+
+      - name: Install smoke test (donation skipped)
+        run: |
+          ANABOL_NO_DONATE=1 ./scripts/install.sh --target "$RUNNER_TEMP/anabol-skills"
+          test -f "$RUNNER_TEMP/anabol-skills/anabol-orchestrator/SKILL.md"
+
+      - name: Install never blocks on non-interactive stdin
+        run: |
+          ./scripts/install.sh --target "$RUNNER_TEMP/anabol-skills-2" < /dev/null
+          test -f "$RUNNER_TEMP/anabol-skills-2/anabol-orchestrator/reference/ingest.md"

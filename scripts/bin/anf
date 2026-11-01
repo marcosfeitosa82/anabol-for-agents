@@ -1,0 +1,45 @@
+#!/bin/sh
+# anf — Anabol find.
+# Route a task to the best merged segment without loading the index into context.
+#
+#   anf "detect SQL injection vulnerabilities"
+#   anf "design a database schema with indexes"
+#   anf "testing" --limit 3
+#   anf "openapi types" --json
+#
+# Override the structure with ANABOL_STRUCTURE=/path/to/skills.
+set -eu
+
+STRUCTURE="${ANABOL_STRUCTURE:-$HOME/.config/opencode/skills}"
+CLI="${ANABOL_CLI:-/root/anabol-for-agents/src/cli.js}"
+
+json=""
+limit=""
+query=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --json) json="--json"; shift ;;
+    --limit)
+      [ $# -ge 2 ] || { echo "anf: --limit needs a value" >&2; exit 1; }
+      limit="$2"; shift 2 ;;
+    --) shift; while [ $# -gt 0 ]; do query="$query $1"; shift; done ;;
+    *) query="$query $1"; shift ;;
+  esac
+done
+query=$(printf '%s' "$query" | sed 's/^ //')
+
+if [ -z "$query" ]; then
+  echo "usage: anf \"<task>\" [--limit N] [--json]" >&2
+  exit 1
+fi
+
+if [ -n "$limit" ]; then
+  set -- --limit "$limit"
+else
+  set --
+fi
+if [ -n "$json" ]; then
+  set -- "$@" --json
+fi
+
+exec node "$CLI" find --structure "$STRUCTURE" --query "$query" "$@"

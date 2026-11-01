@@ -1,0 +1,200 @@
+[
+  {
+    "packages": 1,
+    "sourceSkills": 8,
+    "query": "detect SQL injection vulnerabilities and unsafe query construction",
+    "baseline": {
+      "skills": 11,
+      "descriptionBytes": 950,
+      "totalSkillBytes": 2310,
+      "installMs": 77.05
+    },
+    "anabol": {
+      "skills": 4,
+      "descriptionBytes": 611,
+      "totalSkillBytes": 6869,
+      "segments": 8,
+      "indexBytes": 4108,
+      "indexLines": 177,
+      "installMs": 157.69,
+      "reports": [
+        {
+          "skillsBefore": 3,
+          "skillsAfter": 3,
+          "merged": 8,
+          "skipped": 0
+        }
+      ]
+    },
+    "read": {
+      "segmentId": "pkg1-sql-injection-scan",
+      "segmentCategory": "security",
+      "segmentBytes": 116,
+      "segmentLines": 4,
+      "baselineSkillBytes": 203,
+      "baselineSkillLines": 7,
+      "wholeCategoryBytes": 1463,
+      "wholeCategoryLines": 37,
+      "indexBytes": 4108,
+      "indexLines": 177,
+      "findOutputBytes": 118,
+      "naiveIndexTaskBytes": 4835
+    },
+    "task": {
+      "baselineTaskBytes": 1153,
+      "anabolTaskBytes": 845,
+      "anabolTaskWithNaiveIndexBytes": 4835,
+      "ratio": 0.733,
+      "estimatedBaselineTokens": 289,
+      "estimatedAnabolTokens": 212
+    },
+    "savings": {
+      "skillCountPct": 63.6,
+      "alwaysOnPct": 35.7,
+      "totalBytesPct": -197.4,
+      "taskPct": 26.7,
+      "estimatedTokensPerTask": 77
+    },
+    "label": "fixture"
+  },
+  {
+    "packages": 1,
+    "sourceSkills": 10,
+    "query": "test-driven development write a failing test first coverage",
+    "baseline": {
+      "skills": 20,
+      "descriptionBytes": 7004,
+      "totalSkillBytes": 228752,
+      "installMs": 125.55
+    },
+    "anabol": {
+      "skills": 11,
+      "descriptionBytes": 3819,
+      "totalSkillBytes": 233317,
+      "segments": 10,
+      "indexBytes": 13332,
+      "indexLines": 518,
+      "installMs": 905.47,
+      "reports": [
+        {
+          "skillsBefore": 10,
+          "skillsAfter": 10,
+          "merged": 10,
+          "skipped": 0
+        }
+      ]
+    },
+    "read": {
+      "segmentId": "pkg1-tdd-workflow",
+      "segmentCategory": "tdd-workflow",
+      "segmentBytes": 22129,
+      "segmentLines": 585,
+      "baselineSkillBytes": 22502,
+      "baselineSkillLines": 591,
+      "wholeCategoryBytes": 45134,
+      "wholeCategoryLines": 1179,
+      "indexBytes": 13332,
+      "indexLines": 518,
+      "findOutputBytes": 344,
+      "naiveIndexTaskBytes": 39280
+    },
+    "task": {
+      "baselineTaskBytes": 29506,
+      "anabolTaskBytes": 26292,
+      "anabolTaskWithNaiveIndexBytes": 39280,
+      "ratio": 0.891,
+      "estimatedBaselineTokens": 7377,
+      "estimatedAnabolTokens": 6573
+    },
+    "savings": {
+      "skillCountPct": 45,
+      "alwaysOnPct": 45.5,
+      "totalBytesPct": -2,
+      "taskPct": 10.9,
+      "estimatedTokensPerTask": 804
+    },
+    "label": "real-1"
+  },
+  {
+    "packages": 5,
+    "sourceSkills": 10,
+    "query": "test-driven development write a failing test first coverage",
+    "baseline": {
+      "skills": 60,
+      "descriptionBytes": 21012,
+      "totalSkillBytes": 686256,
+      "installMs": 677.26
+    },
+    "anabol": {
+      "skills": 11,
+      "descriptionBytes": 3819,
+      "totalSkillBytes": 697645,
+      "segments": 50,
+      "indexBytes": 66145,
+      "indexLines": 2558,
+      "installMs": 3384.78,
+      "reports": [
+        {
+          "skillsBefore": 10,
+          "skillsAfter": 10,
+          "merged": 10,
+          "skipped": 0
+        },
+        {
+          "skillsBefore": 10,
+          "skillsAfter": 10,
+          "merged": 10,
+          "skipped": 0
+        },
+        {
+          "skillsBefore": 10,
+          "skillsAfter": 10,
+          "merged": 10,
+          "skipped": 0
+        },
+        {
+          "skillsBefore": 10,
+          "skillsAfter": 10,
+          "merged": 10,
+          "skipped": 0
+        },
+        {
+          "skillsBefore": 10,
+          "skillsAfter": 10,
+          "merged": 10,
+          "skipped": 0
+        }
+      ]
+    },
+    "read": {
+      "segmentId": "pkg1-tdd-workflow",
+      "segmentCategory": "tdd-workflow",
+      "segmentBytes": 22129,
+      "segmentLines": 585,
+      "baselineSkillBytes": 22502,
+      "baselineSkillLines": 591,
+      "wholeCategoryBytes": 135662,
+      "wholeCategoryLines": 3531,
+      "indexBytes": 66145,
+      "indexLines": 2558,
+      "findOutputBytes": 344,
+      "naiveIndexTaskBytes": 92093
+    },
+    "task": {
+      "baselineTaskBytes": 43514,
+      "anabolTaskBytes": 26292,
+      "anabolTaskWithNaiveIndexBytes": 92093,
+      "ratio": 0.604,
+      "estimatedBaselineTokens": 10879,
+      "estimatedAnabolTokens": 6573
+    },
+    "savings": {
+      "skillCountPct": 81.7,
+      "alwaysOnPct": 81.8,
+      "totalBytesPct": -1.7,
+      "taskPct": 39.6,
+      "estimatedTokensPerTask": 4306
+    },
+    "label": "real-5"
+  }
+]

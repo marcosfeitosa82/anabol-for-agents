@@ -1,0 +1,4 @@
+node_modules/
+.anabol/
+*.log
+.DS_Store

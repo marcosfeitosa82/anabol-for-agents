@@ -1,0 +1,38 @@
+{
+  "name": "anabol-for-agents",
+  "version": "0.1.0",
+  "description": "Fuse skill packages into existing category skills instead of growing skill/agent counts.",
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "bin": {
+    "anabol": "src/cli.js"
+  },
+  "scripts": {
+    "test": "node --test tests/unit/*.test.js tests/integration/*.test.js",
+    "test:unit": "node --test tests/unit/*.test.js",
+    "test:integration": "node --test tests/integration/*.test.js",
+    "audit": "node scripts/audit.js",
+    "anabol": "node src/cli.js",
+    "verify": "node scripts/verify.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "src",
+    "skills",
+    "templates",
+    "scripts",
+    "docs",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "opencode",
+    "skills",
+    "agents",
+    "orchestrator",
+    "context-optimization"
+  ]
+}

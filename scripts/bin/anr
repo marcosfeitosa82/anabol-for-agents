@@ -1,0 +1,21 @@
+#!/bin/sh
+# anr — Anabol read.
+# Print one merged segment by id (only its lines).
+#
+#   anr openapi-to-typescript
+#   anr database-schema-designer --json
+#
+# Override the structure with ANABOL_STRUCTURE=/path/to/skills.
+set -eu
+
+STRUCTURE="${ANABOL_STRUCTURE:-$HOME/.config/opencode/skills}"
+CLI="${ANABOL_CLI:-/root/anabol-for-agents/src/cli.js}"
+
+if [ $# -eq 0 ]; then
+  echo "usage: anr <segment-id> [--json]" >&2
+  exit 1
+fi
+
+id=$1
+shift
+exec node "$CLI" read --structure "$STRUCTURE" --id "$id" "$@"

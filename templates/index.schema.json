@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Anabol Segment Index",
+  "description": "Maps each merged sub-skill to its category skill, line range, and anchor so the orchestrator can read only the needed segment.",
+  "type": "object",
+  "required": ["version", "generatedAt", "segments"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Index format version."
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp of the last (re)index run."
+    },
+    "structureRoot": {
+      "type": "string",
+      "description": "Absolute path to the skill structure root this index describes."
+    },
+    "segments": {
+      "type": "array",
+      "description": "One entry per merged sub-skill.",
+      "items": {
+        "type": "object",
+        "required": ["id", "category", "file", "startLine", "endLine", "anchor", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "description": "Unique sub-skill id (kebab-case), unique across the whole index."
+          },
+          "category": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "description": "Category skill the sub-skill was merged into (also its directory name)."
+          },
+          "file": {
+            "type": "string",
+            "description": "Path to the category SKILL.md holding this segment, relative to structureRoot."
+          },
+          "startLine": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "1-based first line of the segment."
+          },
+          "endLine": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "1-based last line of the segment (inclusive). endLine >= startLine."
+          },
+          "anchor": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Unique literal text (a heading) found within the segment; used to re-locate it if lines shift."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "One-line routing description the orchestrator uses to pick a segment."
+          },
+          "keywords": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Frequent body tokens captured at merge time; used by `find` to route terse descriptions without reading the body."
+          },
+          "assets": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Files shipped with the original skill, copied next to the category (structure-relative paths). Relative references in the body are rewritten to these paths."
+          },
+          "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Provenance of the merged content.",
+            "properties": {
+              "package": { "type": "string", "description": "Origin package/repo name." },
+              "path": { "type": "string", "description": "Original SKILL.md path in the source package." }
+            }
+          }
+        }
+      }
+    }
+  }
+}
