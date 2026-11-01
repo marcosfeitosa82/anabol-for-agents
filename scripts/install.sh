@@ -12,6 +12,8 @@ TARGET="$DEFAULT_TARGET"
 NO_DONATE="${ANABOL_NO_DONATE:-0}"
 DONATE_URL="${ANABOL_DONATE_URL:-https://github.com/sponsors/anabol-for-agents}"
 DRY_RUN=0
+COMMANDS=0
+BIN_DIR=""
 
 usage() {
   cat <<'EOF'
@@ -20,6 +22,9 @@ Usage: install.sh [options]
 Options:
   --target DIR     Skills directory to install into
                    (default: $OPENCODE_CONFIG_DIR/skills or ~/.config/opencode/skills)
+  --commands       Also install or refresh the anf and anr commands
+  --bin-dir DIR    Command directory for --commands (implies --commands)
+                   (default: /usr/local/bin if writable, else ~/.local/bin)
   --no-donate      Skip the donation prompt
   --dry-run        Show what would be copied, change nothing
   -h, --help       Show this help
@@ -35,6 +40,16 @@ while [ $# -gt 0 ]; do
     --target)
       [ $# -ge 2 ] || { echo "install.sh: --target needs a value" >&2; exit 2; }
       TARGET="$2"
+      shift 2
+      ;;
+    --commands)
+      COMMANDS=1
+      shift
+      ;;
+    --bin-dir)
+      [ $# -ge 2 ] || { echo "install.sh: --bin-dir needs a value" >&2; exit 2; }
+      BIN_DIR="$2"
+      COMMANDS=1
       shift 2
       ;;
     --no-donate)
@@ -120,6 +135,13 @@ if [ "$DRY_RUN" = "1" ]; then
   echo "  $META_NAME/reference/ingest.md (unregistered)"
   echo "  $META_NAME/reference/donate.md (unregistered)"
   echo "Would remove legacy registered skills: anabol-ingest, anabol-donate"
+  if [ "$COMMANDS" = "1" ]; then
+    if [ -n "$BIN_DIR" ]; then
+      echo "Would install anf, anr into: $BIN_DIR"
+    else
+      echo "Would install anf, anr into: /usr/local/bin (or ~/.local/bin)"
+    fi
+  fi
   exit 0
 fi
 
@@ -140,6 +162,18 @@ cp "$ROOT/skills/anabol-ingest/SKILL.md" "$TARGET/$META_NAME/reference/ingest.md
 cp "$ROOT/skills/anabol-donate/SKILL.md" "$TARGET/$META_NAME/reference/donate.md"
 echo "installed $META_NAME -> $TARGET/$META_NAME (1 registered skill)"
 echo "  reference/ingest.md, reference/donate.md (not registered)"
+
+if [ "$COMMANDS" = "1" ]; then
+  echo ""
+  if [ -n "$BIN_DIR" ]; then
+    "$ROOT/scripts/install-commands.sh" --target "$BIN_DIR"
+  else
+    "$ROOT/scripts/install-commands.sh"
+  fi
+else
+  echo ""
+  echo "Tip: run $ROOT/scripts/install-commands.sh to install or refresh anf and anr."
+fi
 
 echo ""
 echo "Anabol installed. Next:"

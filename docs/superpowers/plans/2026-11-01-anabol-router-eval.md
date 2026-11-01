@@ -152,6 +152,7 @@ The target is **≤ 20 KB per task packet** (plan section + spec section + 1–3
 | Unit/integration | `npm test` | 0 failures |
 | End-to-end | `npm run verify` | 100% checks |
 | Routing | `npm run eval:routing` | 12/12, off-domain 4/4 |
+| Holdout | `npm run eval:routing:holdout` | ≥ 7/8, off-domain 4/4 (frozen; never tuned) |
 | Baseline | `npm run eval:routing -- --segments-only --threshold 0` | 6/12, off-domain 0/4 |
 | Self-routing | `npm run eval:routing -- --self` | 100% of entries route to themselves or a child segment |
 | Audit | `npm run audit` | no regression against `docs/audit-results.json` |

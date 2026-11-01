@@ -183,7 +183,11 @@ unreachable.
 | Registered skills | 11 | 11 | 0 |
 
 The labeled cases and off-domain queries live in `scripts/routing-cases.json`;
-`npm run eval:routing` reproduces the table. Whole-category entries add one row per base
+`npm run eval:routing` reproduces the table. A frozen holdout lives in
+`scripts/routing-cases-holdout.json`: `npm run eval:routing:holdout` scores **7/8 top-1** and
+**4/4 off-domain**. The single miss (`check naming and immutability conventions` →
+`naming-analyzer` instead of `coding-standards`) is kept as-is; the holdout is not used to
+retune the threshold or the queries. Whole-category entries add one row per base
 skill to the index (the meta-skill is excluded), so the index grows slightly while the skill
 count stays the same. The v2 index budget is **32 KB**; the earlier 25 KB estimate predates
 whole-category entries and the index never enters the agent context. The confidence

@@ -15,6 +15,7 @@
     "audit": "node scripts/audit.js",
     "anabol": "node src/cli.js",
     "eval:routing": "node scripts/eval-routing.js",
+    "eval:routing:holdout": "node scripts/eval-routing.js --cases scripts/routing-cases-holdout.json --min-accuracy 0.75 --min-off-domain 1",
     "route:report": "node scripts/route-report.js",
     "verify": "node scripts/verify.js"
   },

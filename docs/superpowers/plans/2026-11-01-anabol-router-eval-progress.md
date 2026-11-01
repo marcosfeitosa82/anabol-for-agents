@@ -40,3 +40,13 @@ Deferred minors:
 Follow-ups:
 - Phase 2 (index H2/H3 sections inside large categories) stays deferred until measurement justifies it.
 - GitHub publication is still blocked on user authentication and a remote; local implementation is complete.
+
+Deferred-minor resolution (branch `fix/deferred-minors`):
+- Index budget rebaselined to **32 KB** for the v2 shape (measured 28,663 B); the 25 KB gate predated whole-category entries.
+- Docs and the pipeline comment now describe the fixed-point cycle: 3 builds and 2 TOC renders.
+- Multiline segment and category descriptions are normalized at index time, so `find`/`list`/TOC stay one line.
+- Removed the unused `log` option from the `findSegments` call; logging remains in `cli.js`.
+- `readById` uses `safeJoin` for segment and category paths; a tampered index cannot escape the structure root.
+- `install.sh` gained opt-in `--commands`/`--bin-dir` and prints the `install-commands.sh` hint by default.
+- Added schema, CLI `--log`, and id-shadowing regression tests; `npm test` 103/103.
+- Added a frozen holdout: **7/8 top-1**, **4/4 off-domain**. The single miss is documented and was not used for tuning.

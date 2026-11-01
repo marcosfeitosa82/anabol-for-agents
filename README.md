@@ -55,6 +55,7 @@ node src/cli.js install \
 
 # 4. Install the short commands (optional, recommended)
 ./scripts/install-commands.sh   # anf, anr
+# or: ./scripts/install.sh --commands --bin-dir ~/.local/bin
 
 # 5. Route a task, then read only the winner
 anf "detect SQL injection vulnerabilities"   # security-review (whole category)
@@ -168,6 +169,7 @@ npm run verify    # end-to-end check against an installed structure (read-only)
 npm run audit     # comparative benchmark (writes a report to stdout)
 npm run eval:routing   # top-1 accuracy and off-domain rejection on the live structure
 npm run eval:routing -- --self   # every index entry routes to itself
+npm run eval:routing:holdout     # frozen holdout: one tolerated miss, off-domain must be 4/4
 npm run route:report   # summarize the opt-in .anabol/route-log.jsonl
 ```
 

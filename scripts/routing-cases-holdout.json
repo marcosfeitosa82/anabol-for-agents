@@ -1,0 +1,18 @@
+{
+  "cases": [
+    { "query": "write API handoff docs for the frontend team", "expect": "backend-to-frontend-handoff-docs" },
+    { "query": "draw a sequence diagram with Mermaid", "expect": "mermaid-diagrams" },
+    { "query": "list the data the frontend needs from the backend", "expect": "frontend-to-backend-requirements" },
+    { "query": "create a regression test plan for QA", "expect": "qa-test-planner" },
+    { "query": "compare the planned and actual impact of a risky change", "expect": "change-impact" },
+    { "query": "check naming and immutability conventions", "expect": "coding-standards" },
+    { "query": "write acceptance criteria and a verification plan for a scoped change", "expect": "intent-driven-development" },
+    { "query": "run build lint tests and security checks before a PR", "expect": "verification-loop" }
+  ],
+  "offDomain": [
+    "plan a vegetarian dinner menu",
+    "summarize this novel chapter",
+    "tune my guitar to drop D",
+    "calculate the mortgage interest"
+  ]
+}
