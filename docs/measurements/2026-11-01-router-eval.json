@@ -1,0 +1,53 @@
+{
+  "date": "2026-11-01",
+  "environment": {
+    "node": "24.22.1",
+    "platform": "linux-aarch64",
+    "host": "Alpine 3.24.3"
+  },
+  "structure": {
+    "skills": 11,
+    "segments": 10,
+    "categories": 10,
+    "indexVersion": 2
+  },
+  "before": {
+    "top1": "6/12",
+    "top1Pct": 50,
+    "offDomain": "0/4",
+    "taskRouting": "0/7",
+    "indexBytes": 15733
+  },
+  "after": {
+    "top1": "12/12",
+    "top1Pct": 100,
+    "offDomain": "4/4",
+    "taskRouting": "4/7",
+    "selfRouting": "20/20",
+    "lowestWinningScore": 0.5,
+    "threshold": 0.35,
+    "indexBytes": 28663
+  },
+  "latency": {
+    "anfP50Ms": 535,
+    "anfP95Ms": 566,
+    "runs": 10
+  },
+  "hotPathBytes": 496,
+  "noMatchBytes": 9,
+  "routeLog": {
+    "tasksRecorded": 7,
+    "noMatch": 2,
+    "rejected": 5,
+    "usedAsAuthoritative": 0,
+    "totalAnfBytes": 1435
+  },
+  "commands": [
+    "npm test",
+    "npm run verify",
+    "npm run eval:routing",
+    "npm run eval:routing -- --self",
+    "npm run eval:routing -- --segments-only --threshold 0",
+    "npm run audit"
+  ]
+}

@@ -1,7 +1,7 @@
 # Anabol Router Eval — Design
 
 **Date:** 2026-11-01
-**Status:** proposed (awaiting approval)
+**Status:** implemented
 
 ## Intent
 

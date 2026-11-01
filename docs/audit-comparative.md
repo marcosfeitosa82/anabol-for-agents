@@ -178,7 +178,7 @@ unreachable.
 | Top-1 routing (12 labeled cases) | 6/12 (50%) | **12/12 (100%)** | +50 pp |
 | Off-domain queries rejected | 0/4 | **4/4** | +4 |
 | Self-routing (every index entry) | — | **20/20** | — |
-| Index size | 15,733 B | see `measurements/2026-11-01-router-eval.json` | — |
+| Index size | 15,733 B | **28,663 B** | +12,930 B (+82%) |
 | `find` output | ~500 B | ~500 B | ~0 |
 | Registered skills | 11 | 11 | 0 |
 
