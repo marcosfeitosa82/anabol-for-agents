@@ -596,7 +596,7 @@ git commit -m "feat(find): route to whole categories and reject low-confidence q
 
 **Interfaces:**
 - `routing-cases.json` shape: `{ "cases": [{ "query": string, "expect": string }], "offDomain": string[], "taskQueries": [{ "query": string, "expect": string }] }`; `expect` is an id or the literal `NO_MATCH`.
-- `eval-routing.js` flags: `--structure DIR` (default `$ANABOL_STRUCTURE` or `~/.config/opencode/skills`), `--threshold N` (default `0.35`), `--segments-only`, `--self`, `--json`, `--min-accuracy N` (default `0`). Exit `1` only when top-1 accuracy is below `--min-accuracy`.
+- `eval-routing.js` flags: `--structure DIR` (default `$ANABOL_STRUCTURE` or `~/.config/opencode/skills`), `--threshold N` (default `0.35`), `--segments-only`, `--self`, `--json`, `--min-accuracy N` (default `0`), `--min-off-domain N` (default `0`), `--min-cases N` (default `0`). Exit `1` when top-1 accuracy, off-domain rejection, or the labeled-case count is below its minimum.
 - Output lines: `HIT`/`MISS` per case with `top.id` and `score`, then `top-1: X/N (P%)`, `off-domain rejected: X/N`, `lowest winning score: S`. `--self` adds `self-routing: X/N`; the task queries add `task-routing: X/N` as a reported diagnostic, not a hard gate.
 
 - [ ] **Step 1: Write the cases and harness**

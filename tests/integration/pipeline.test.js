@@ -276,8 +276,10 @@ test('the index schema stays v2 with the documented entry shape', () => {
     const entryKeys = ['anchor', 'category', 'description', 'endLine', 'file', 'id', 'keywords', 'startLine'];
     for (const entry of [...index.segments, ...index.categories]) {
       const keys = Object.keys(entry);
-      assert.deepStrictEqual(keys.filter((k) => k !== 'assets').sort(), entryKeys.slice().sort());
+      const optional = new Set(['assets', 'source']);
+      assert.deepStrictEqual(keys.filter((k) => !optional.has(k)).sort(), entryKeys.slice().sort());
       if (keys.includes('assets')) assert.ok(Array.isArray(entry.assets));
+      if (keys.includes('source')) assert.strictEqual(typeof entry.source, 'object');
       assert.strictEqual(typeof entry.id, 'string');
       assert.strictEqual(typeof entry.category, 'string');
       assert.strictEqual(typeof entry.file, 'string');

@@ -52,8 +52,8 @@ function ratio(fraction) {
 
 /**
  * Decide whether an eval run satisfies the CI gate. Both metrics are ratios in
- * [0, 1]; an empty case set passes, so adding `--cases` later never fails CI on
- * day one.
+ * [0, 1]; an empty case set passes unless `minCases` is set, so adding
+ * `--cases` later never fails CI on day one.
  *
  * @param {{top1:string, offDomain:string, cases?:number}} summary
  * @param {{minAccuracy?:number, minOffDomain?:number, minCases?:number}} [opts]
