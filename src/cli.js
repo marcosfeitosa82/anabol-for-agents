@@ -20,7 +20,7 @@ function parseArgs(argv) {
     const a = argv[i];
     if (a.startsWith('--')) {
       const key = a.slice(2);
-      if (key === 'dry-run' || key === 'json') {
+      if (key === 'dry-run' || key === 'json' || key === 'log' || key === 'segments-only') {
         out[key] = true;
       } else {
         out[key] = argv[++i];
@@ -55,6 +55,7 @@ function main() {
           merged: report.merged,
           skipped: report.skipped,
           segments: report.index.length,
+          categories: (report.categories || []).length,
         },
         true,
       );
@@ -63,7 +64,7 @@ function main() {
 
     if (command === 'reindex') {
       const index = reindex({ structureRoot: structure, write: !args['dry-run'] });
-      print({ ok: true, segments: index.segments.length });
+      print({ ok: true, segments: index.segments.length, categories: (index.categories || []).length });
       return;
     }
 
@@ -79,6 +80,7 @@ function main() {
           endLine: r.endLine,
           usedFallback: r.usedFallback,
           linesRead: r.linesRead,
+          whole: r.whole,
           assets: r.segment.assets || [],
           text: r.text,
         });
@@ -90,13 +92,25 @@ function main() {
 
     if (command === 'find') {
       if (!args.query) throw new Error('find requires --query <text>');
+      let threshold;
+      if (args.threshold !== undefined) {
+        threshold = Number(args.threshold);
+        if (!Number.isFinite(threshold) || threshold < 0 || threshold > 1) {
+          throw new Error('--threshold must be a number in [0, 1]');
+        }
+      }
       const results = findSegments({
         structureRoot: structure,
         query: args.query,
         limit: args.limit ? Number(args.limit) : 1,
+        threshold,
+        includeCategories: !args['segments-only'],
+        log: !!args.log,
       });
       if (args.json) {
         print(results);
+      } else if (results.length === 0) {
+        process.stdout.write('NO_MATCH\n');
       } else {
         for (const r of results) {
           process.stdout.write(`${r.id}\t${r.file}\t${r.startLine}-${r.endLine}\t${r.description || ''}\t${r.score}\n`);

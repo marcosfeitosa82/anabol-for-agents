@@ -13,9 +13,10 @@ const { discoverSkills, discoverSource, dedupeIds } = require('./discover');
 const { ingest, bestCategory, toEntry } = require('./ingest');
 const { mergeIntoCategory, removeSegment } = require('./merge');
 const { buildIndex } = require('./indexer');
+const { rankEntries, DEFAULT_THRESHOLD } = require('./router');
 const { readSegment } = require('./segment');
 const { collectAssets, rewriteAssetRefs, copyAssets, removeAssets, listAssets, attachAssets } = require('./assets');
-const { TOC_OPEN, TOC_CLOSE, SEGMENTS_OPEN, SEGMENTS_CLOSE, overlapScore, containmentScore } = require('./lib');
+const { TOC_OPEN, TOC_CLOSE, SEGMENTS_OPEN, SEGMENTS_CLOSE } = require('./lib');
 
 const INDEX_DIR = '.anabol';
 const INDEX_FILE = 'index.json';
@@ -202,6 +203,7 @@ function install(opts) {
     merged,
     skipped,
     index: index.segments,
+    categories: index.categories,
   };
 }
 
@@ -228,7 +230,8 @@ function writeIndexIfChanged(structureRoot, index) {
   if (
     previous &&
     previous.version === index.version &&
-    JSON.stringify(previous.segments) === JSON.stringify(index.segments)
+    JSON.stringify(previous.segments) === JSON.stringify(index.segments) &&
+    JSON.stringify(previous.categories || []) === JSON.stringify(index.categories || [])
   ) {
     index.generatedAt = previous.generatedAt;
   }
@@ -267,34 +270,54 @@ function readById(opts) {
   const { structureRoot, id } = opts;
   const idxPath = path.join(structureRoot, INDEX_DIR, INDEX_FILE);
   const index = JSON.parse(fs.readFileSync(idxPath, 'utf8'));
+
   const seg = index.segments.find((s) => s.id === id);
-  if (!seg) throw new Error(`unknown segment: ${id}`);
-  const content = fs.readFileSync(path.join(structureRoot, seg.file), 'utf8');
-  return { ...readSegment(content, seg), segment: seg };
+  if (seg) {
+    const content = fs.readFileSync(path.join(structureRoot, seg.file), 'utf8');
+    return { ...readSegment(content, seg), whole: false, segment: seg };
+  }
+
+  const category = (index.categories || []).find((c) => c.id === id);
+  if (category) {
+    const content = fs.readFileSync(path.join(structureRoot, category.file), 'utf8');
+    const linesRead = content.split('\n').length;
+    return {
+      text: content,
+      startLine: 1,
+      endLine: linesRead,
+      usedFallback: false,
+      linesRead,
+      whole: true,
+      segment: category,
+    };
+  }
+
+  throw new Error(`unknown segment: ${id}`);
 }
 
 /**
- * Find the best segment(s) for a task query without putting the index in the
- * caller's context. The CLI prints only the winning entry, so the orchestrator
- * pays a few hundred bytes instead of the whole index.
+ * Find the best entry (merged segment or whole category) for a task query
+ * without putting the index in the caller's context. The CLI prints only the
+ * winning entry, so the orchestrator pays a few hundred bytes instead of the
+ * whole index. Entries below the confidence threshold are dropped; an
+ * off-domain query therefore returns an empty array instead of a guess.
  *
- * @param {{structureRoot:string, query:string, limit?:number}} opts
- * @returns {Array<object>} matching segments with a `score`
+ * @param {{structureRoot:string, query:string, limit?:number, threshold?:number, includeCategories?:boolean}} opts
+ * @returns {Array<object>} matching entries with a `score` and `kind`
  */
 function findSegments(opts) {
-  const { structureRoot, query, limit = 1 } = opts;
+  const {
+    structureRoot,
+    query,
+    limit = 1,
+    threshold = DEFAULT_THRESHOLD,
+    includeCategories = true,
+  } = opts;
   if (!query || !String(query).trim()) throw new Error('find requires a query');
 
   const idxPath = path.join(structureRoot, INDEX_DIR, INDEX_FILE);
   const index = JSON.parse(fs.readFileSync(idxPath, 'utf8'));
-  const scored = index.segments.map((seg) => {
-    const text = `${seg.id} ${seg.description || ''} ${(seg.keywords || []).join(' ')}`;
-    const score = Math.max(overlapScore(query, text), containmentScore(query, text));
-    return { ...seg, score: Number(score.toFixed(4)) };
-  });
-
-  scored.sort((a, b) => b.score - a.score || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  return scored.slice(0, Math.max(1, Number(limit) || 1));
+  return rankEntries(query, index, { threshold, limit, includeCategories });
 }
 
 module.exports = { install, reindex, readById, findSegments, renderToc, categorySkeleton, INDEX_DIR, INDEX_FILE };

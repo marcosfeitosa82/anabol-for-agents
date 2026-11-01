@@ -151,7 +151,7 @@ function run(opts) {
     const index = JSON.parse(fs.readFileSync(indexFile, 'utf8'));
 
     const query = opts.query || 'detect SQL injection vulnerabilities and unsafe query construction';
-    const found = findSegments({ structureRoot: anabol, query, limit: 1 })[0];
+    const found = findSegments({ structureRoot: anabol, query, limit: 1, threshold: 0, includeCategories: false })[0];
     if (!found) throw new Error('no segment found for the audit query');
 
     const read = readById({ structureRoot: anabol, id: found.id });

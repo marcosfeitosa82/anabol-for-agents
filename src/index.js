@@ -20,5 +20,6 @@ const indexer = require('./indexer');
 const segment = require('./segment');
 const discover = require('./discover');
 const pipeline = require('./pipeline');
+const router = require('./router');
 
-module.exports = { lib, ingest, merge, indexer, segment, discover, pipeline };
+module.exports = { lib, ingest, merge, indexer, segment, discover, pipeline, router };

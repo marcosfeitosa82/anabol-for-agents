@@ -15,13 +15,21 @@ CLI="${ANABOL_CLI:-/root/anabol-for-agents/src/cli.js}"
 
 json=""
 limit=""
+threshold=""
+log=""
+segments_only=""
 query=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --json) json="--json"; shift ;;
+    --log) log="--log"; shift ;;
+    --segments-only) segments_only="--segments-only"; shift ;;
     --limit)
       [ $# -ge 2 ] || { echo "anf: --limit needs a value" >&2; exit 1; }
       limit="$2"; shift 2 ;;
+    --threshold)
+      [ $# -ge 2 ] || { echo "anf: --threshold needs a value" >&2; exit 1; }
+      threshold="$2"; shift 2 ;;
     --) shift; while [ $# -gt 0 ]; do query="$query $1"; shift; done ;;
     *) query="$query $1"; shift ;;
   esac
@@ -29,14 +37,22 @@ done
 query=$(printf '%s' "$query" | sed 's/^ //')
 
 if [ -z "$query" ]; then
-  echo "usage: anf \"<task>\" [--limit N] [--json]" >&2
+  echo "usage: anf \"<task>\" [--limit N] [--threshold N] [--segments-only] [--log] [--json]" >&2
   exit 1
 fi
 
+set --
 if [ -n "$limit" ]; then
-  set -- --limit "$limit"
-else
-  set --
+  set -- "$@" --limit "$limit"
+fi
+if [ -n "$threshold" ]; then
+  set -- "$@" --threshold "$threshold"
+fi
+if [ -n "$log" ]; then
+  set -- "$@" "$log"
+fi
+if [ -n "$segments_only" ]; then
+  set -- "$@" "$segments_only"
 fi
 if [ -n "$json" ]; then
   set -- "$@" --json
