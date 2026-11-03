@@ -6,7 +6,7 @@
 Claude Code, …) that installs new skill packages by merging their content *into* the skills
 you already have — instead of growing the skill/agent count.
 
-![Slide animation](/docs/images/slide.mp4)
+<video src="/docs/images/slide.mp4" controls autoplay loop muted playsinline width="100%" style="max-width:600px;"></video>
 
 ```
 Before:  skill A, skill B, skill C, [ +8 new skills ]   →  11 skills, context bloat
