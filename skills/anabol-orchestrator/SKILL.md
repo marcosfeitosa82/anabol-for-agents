@@ -109,3 +109,26 @@ Read them only when needed. In the source repository they live at
 - Never split merged content into separate files.
 - Keep category skills as the only registered skills.
 - The donation prompt is optional and must never block an install.
+
+## Self-improvement
+
+This meta-skill evolves via its own internal reference only — it never creates a new skill
+file to accumulate capacity. Improvements are gathered in `docs/self-improve/notes.md` and
+applied as text enhancements to this SKILL.md or the index.json; the registry count stays fixed.
+
+### Router conservador (padrão de design)
+A safe pattern: a small entry point defines precedence and safety rules, skill manifests define
+ownership and boundaries, a project overlay declares local truth, a task-time router chooses a
+single primary owner, and a routing trace explains the decision. This mirrors the [openAI
+community discussion on overlapping skills](https://community.openai.com/t/how-do-you-handle-overlapping-codex-skills-in-larger-skill-catalogs/1383626)
+and is already implemented by `find`: below a threshold it returns `NO_MATCH` rather than guessing.
+See `docs/architecture.md` and `docs/audit-comparative.md`.
+
+### Auto-aperfeiçoamento dirigido
+Learn from local history, not from new files. When repeated routes produce consistent low scores
+(below threshold for several calls with the same query), the orchestrator can note that in
+`docs/self-improve/notes.md` and propose whether the index line should be re-tried or the anchor
+adjusted — without adding a new skill or agent. No registry growth occurs.
+
+### Referência para Fase 2
+Descobertas documentadas em `docs/self-improve/notes.md` (Fase 1): Meta Context Engineering (bi-level optimization), Skill-MAS evolvível meta-skill, e context engineering 2026. Cada descoberta é registrada com link e aplicação sugerida; nenhum novo arquivo é criado.
