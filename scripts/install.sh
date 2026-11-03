@@ -11,6 +11,7 @@ DEFAULT_TARGET="${OPENCODE_CONFIG_DIR:-$HOME/.config/opencode}/skills"
 TARGET="$DEFAULT_TARGET"
 NO_DONATE="${ANABOL_NO_DONATE:-0}"
 DONATE_URL="${ANABOL_DONATE_URL:-https://github.com/sponsors/anabol-for-agents}"
+DONATE_EMAIL="${ANABOL_DONATE_EMAIL:-anabolforagents@gmail.com}"
 DRY_RUN=0
 COMMANDS=0
 BIN_DIR=""
@@ -91,7 +92,9 @@ donation_prompt() {
 
   echo ""
   echo "Anabol is free and always will be. If it saves you time, you can support"
-  echo "maintenance and new adapters: $DONATE_URL"
+  echo "maintenance and new adapters via:"
+  echo "  • email  -> $DONATE_EMAIL  (envie seu pix)"
+  echo "  • sponsors  -> $DONATE_URL"
   printf "Donate? [y/N] (auto-skips in 10s) "
 
   answer=""

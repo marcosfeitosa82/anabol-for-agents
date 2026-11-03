@@ -1,3 +1,5 @@
+![Cover Image](/docs/images/cover.jpg)
+
 # Anabol for Agents
 
 **Fuse skills, don't accumulate them.** A meta-skill for any orchestrator (OpenCode,
