@@ -1,10 +1,12 @@
 ![Cover Image](/docs/images/cover.jpg)
 
-# Anabol for Agents
+# Anabol for Agents (v0.1.1 — Auto-aperfeiçoamento recursivo)
 
 **Fuse skills, don't accumulate them.** A meta-skill for any orchestrator (OpenCode,
 Claude Code, …) that installs new skill packages by merging their content *into* the skills
 you already have — instead of growing the skill/agent count.
+
+**Super Power: self-improvement** — os wrappers (`anf`, `anr`) aprendem com sua própria estrutura ANABOL_STRUCTURE repetidas rotas baixas, observando padroes e propondo ajustes sem criar novos arquivos. O prompt imediato está em `docs/self-improve/prompt.md`.
 
 <video src="/docs/images/slide.mp4" controls autoplay loop muted playsinline width="100%" style="max-width:600px;"></video>
 
