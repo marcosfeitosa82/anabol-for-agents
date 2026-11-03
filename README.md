@@ -36,7 +36,7 @@ If the index goes stale (file edited, lines shifted), the reader falls back to l
 ## Quick start
 
 ```bash
-git clone https://github.com/<you>/anabol-for-agents.git
+git clone https://github.com/marcosfeitosa82/anabol-for-agents.git
 cd anabol-for-agents
 
 # 1. Install the meta-skill into OpenCode (1 registered skill; donation prompt is skippable)

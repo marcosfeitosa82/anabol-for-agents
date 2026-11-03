@@ -15,7 +15,8 @@
 set -eu
 
 STRUCTURE="${ANABOL_STRUCTURE:-$HOME/.config/opencode/skills}"
-CLI="${ANABOL_CLI:-/root/anabol-for-agents/src/cli.js}"
+ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)"
+CLI="${ANABOL_CLI:-$ROOT/src/cli.js}"
 
 json=""
 limit=""
